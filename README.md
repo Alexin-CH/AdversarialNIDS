@@ -37,5 +37,12 @@ pip install -r requirements.txt
 ```
 
 ## Autres repo utiles :
+
+### CICIDS2017
+
 - https://github.com/r-dube/CICIDS
+- https://github.com/noushinpervez/Intrusion-Detection-CICIDS2017
+
+### UNSW-NB15
+
 - https://github.com/rahmanshiddiqur/UNSW_NB15
