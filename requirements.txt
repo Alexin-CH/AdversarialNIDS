@@ -13,6 +13,8 @@ tqdm>=4.65.0
 # HTTP Requests
 requests>=2.31.0
 
+kagglehub
+
 # Jupyter Notebook
 jupyter>=1.0.0
 notebook>=6.5.0
