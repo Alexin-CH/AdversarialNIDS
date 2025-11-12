@@ -35,3 +35,7 @@ Installez les dépendances :
 ```bash
 pip install -r requirements.txt
 ```
+
+## Autres repo utiles :
+- https://github.com/r-dube/CICIDS
+- https://github.com/rahmanshiddiqur/UNSW_NB15
