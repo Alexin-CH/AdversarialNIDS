@@ -1,4 +1,4 @@
-# Note de Cadrage : Attaques Adresariales sur les Systèmes de Détection d’Intrusion
+# Note de Cadrage : Attaques Adversariales sur les Systèmes de Détection d’Intrusion
 
 ## Informations Générales
 - **Projet** : Attaques adversariales sur les systèmes de détection d’intrusion basés sur l’apprentissage automatique
