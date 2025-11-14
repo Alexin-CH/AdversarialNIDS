@@ -30,12 +30,9 @@ class CICIDS2017:
         self.data = optimize_memory_usage(self.data, logger=self.logger)
         return self
 
-    def scale(self, scaler=StandardScaler(), keep_unscaled=True, logger=SimpleLogger()):
+    def scale(self, scaler=StandardScaler(), logger=SimpleLogger()):
         """ Scale the dataset features using the provided scaler. """
-        scaled_features = scale(self.data, scaler=scaler, logger=logger)
-        if keep_unscaled:
-            self.scaled_features = scaled_features
-            self.logger.info("Scaled features are stored in 'scaled_features' attribute.")
-        else:
-            self.data = scaled_features
+        self.logger.info("Scaling dataset features...")
+        self.scaled_features = scale(self.data, scaler=scaler, logger=self.logger)
         return self
+        
