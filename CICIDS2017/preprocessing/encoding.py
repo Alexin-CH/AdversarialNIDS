@@ -1,7 +1,14 @@
+import os
+import sys
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-def data_encoding(data, logger=None):
+current_dir = os.getcwd()
+sys.path.append(current_dir)
+
+from scripts.logger import SimpleLogger
+
+def data_encoding(data, logger=SimpleLogger()):
     """
     Encode the 'Label' column of the dataset into attack types and numerical labels.
     Args:
