@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from CICIDS2017.preprocessing import preprocess_cicids2017
+from CICIDS2017.preprocessing.dataset import CICIDS2017
 
 # entropy_sort.py
 # Requires a same-folder preprocessing.py that returns a pandas.DataFrame
@@ -109,17 +109,21 @@ def _load_dataframe_from_preprocessing(logger=None):
 
     Raises RuntimeError if no DataFrame can be obtained.
     """
-    # We import the preprocessing function directly (from CICIDS2017.preprocessing)
-    # and call it. The caller may pass a logger; the function is expected to return
-    # a pandas.DataFrame. Raise a clear error if the contract is violated.
+    # Use the new CICIDS2017 dataset class in preprocessing.dataset
+    # The class handles download, encoding and memory optimization via methods.
     try:
-        df = preprocess_cicids2017(logger=logger)
+        ds = CICIDS2017(logger=logger)
+        # apply common pipeline steps that were previously done in preprocess_cicids2017
+        ds.optimize_memory()
+        df = ds.data
     except TypeError:
-        # Some callers or older signatures may not accept logger; try without it
-        df = preprocess_cicids2017()
+        # In case constructor signature differs, try without logger
+        ds = CICIDS2017()
+        ds.optimize_memory()
+        df = ds.data
 
     if not isinstance(df, pd.DataFrame):
-        raise RuntimeError("preprocess_cicids2017 did not return a pandas.DataFrame")
+        raise RuntimeError("CICIDS2017 preprocessing did not return a pandas.DataFrame")
     return df
 
 def choose_label_column(df):

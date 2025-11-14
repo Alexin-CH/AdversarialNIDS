@@ -21,6 +21,8 @@ def main():
 	pd.set_option('display.max_rows', 50)
 	top = ranking.head(10)
 	logger.info("Top 10 features:\n%s", top.to_string(index=False))
+	logger.info("End of feature ranking test.")
+
 
 
 if __name__ == '__main__':
