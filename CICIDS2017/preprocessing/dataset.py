@@ -1,13 +1,9 @@
 import os
 import pandas as pd
 import numpy as np
-
-from sklearn.preprocessing import LabelEncoder
-
 import kagglehub
 
-
-def preprocess_cicids2017(logger=None):
+def get(logger=None):
     """
     Preprocess the CICIDS2017 dataset from Kaggle.
     
@@ -144,6 +140,19 @@ def preprocess_cicids2017(logger=None):
                 if col in data.columns:
                     remaining_missing = data[col].isna().sum()
                     logger.info(f"Remaining missing values in '{col}': {remaining_missing}")
+
+        # Dropping columns with only one unique value
+        num_unique = data.nunique()
+        one_variable = num_unique[num_unique == 1]
+        not_one_variable = num_unique[num_unique > 1].index
+
+        dropped_cols = one_variable.index
+        data = data[not_one_variable]
+
+        if logger:
+            logger.info(f"Dropping {len(dropped_cols)} columns with only one unique value:")
+            for col in dropped_cols:
+                logger.info(f"  Dropped column: {col}")
         
         # Final dimensions
         final_rows, final_cols = data.shape
@@ -173,85 +182,3 @@ def preprocess_cicids2017(logger=None):
         if logger:
             logger.error(f"Error during preprocessing: {e}")
         raise
-
-def data_encoding(data, logger=None):
-    """
-    Encode the 'Label' column of the dataset into attack types and numerical labels.
-    Args:
-        data (pd.DataFrame): The DataFrame containing the 'Label' column.
-        logger: Optional logger instance for tracking encoding steps.
-    Returns:
-        pd.DataFrame: The DataFrame with encoded attack types and numerical labels.
-    """
-    if logger:
-        logger.info("Starting data encoding process")
-        logger.info(f"Data Labels before encoding: {data['Label'].value_counts()}")
-
-    try:
-        # Creating a dictionary that maps each label to its attack type
-        attack_map = {
-            'BENIGN': 'BENIGN',
-            'DDoS': 'DDoS',
-            'DoS Hulk': 'DoS',
-            'DoS GoldenEye': 'DoS',
-            'DoS slowloris': 'DoS',
-            'DoS Slowhttptest': 'DoS',
-            'PortScan': 'Port Scan',
-            'FTP-Patator': 'Brute Force',
-            'SSH-Patator': 'Brute Force',
-            'Bot': 'Bot',
-            'Web Attack Brute Force': 'Web Attack',
-            'Web Attack XSS': 'Web Attack',
-            'Web Attack Sql Injection': 'Web Attack',
-            'Infiltration': 'Infiltration',
-            'Heartbleed': 'Heartbleed'
-        }
-
-        # Creating a new column 'Attack Type' in the DataFrame based on the attack_map dictionary
-        data['Attack Type'] = data['Label'].map(attack_map)
-
-        data.drop('Label', axis = 1, inplace = True)
-
-        le = LabelEncoder()
-        data['Attack Number'] = le.fit_transform(data['Attack Type'])
-
-        if logger:
-            logger.info(f"Data Labels after encoding: {data['Attack Type'].value_counts()}")
-
-    except KeyError as e:
-        if logger:
-            logger.error(f"KeyError during data encoding: {e}")
-        raise
-
-    return data
-
-def optimize_memory_usage(data, logger=None):
-    """
-    Optimize memory usage of a pandas DataFrame by downcasting numeric columns.
-    Args:
-        data (pd.DataFrame): The DataFrame to optimize.
-    Returns:
-        pd.DataFrame: The optimized DataFrame.
-    """
-    # For improving performance and reduce memory-related errors
-    old_memory_usage = data.memory_usage().sum() / 1024 ** 2
-    if logger:
-        logger.info(f'Initial memory usage: {old_memory_usage:.2f} MB')
-    for col in data.columns:
-        col_type = data[col].dtype
-        if col_type != object:
-            c_min = data[col].min()
-            c_max = data[col].max()
-            # Downcasting float64 to float32
-            if str(col_type).find('float') >= 0 and c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
-                data[col] = data[col].astype(np.float32)
-
-            # Downcasting int64 to int32
-            elif str(col_type).find('int') >= 0 and c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
-                data[col] = data[col].astype(np.int32)
-
-    new_memory_usage = data.memory_usage().sum() / 1024 ** 2
-    if logger:
-        logger.info(f'Optimized memory usage: {new_memory_usage:.2f} MB')
-        logger.info(f'Memory reduction: {old_memory_usage - new_memory_usage:.2f} MB ({((old_memory_usage - new_memory_usage) / old_memory_usage) * 100:.2f}%)')
-    return data
