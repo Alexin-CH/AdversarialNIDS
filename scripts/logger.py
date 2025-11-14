@@ -2,6 +2,27 @@ import logging
 import os
 from datetime import datetime
 
+class SimpleLogger:
+    def debug(self, message):
+        """Log a debug message."""
+        print(f"[DEBUG] {message}")
+    
+    def info(self, message):
+        """Log an info message."""
+        print(f"[INFO] {message}")
+    
+    def warning(self, message):
+        """Log a warning message."""
+        print(f"[WARNING] {message}")
+    
+    def error(self, message):
+        """Log an error message."""
+        print(f"[ERROR] {message}")
+    
+    def critical(self, message):
+        """Log a critical message."""
+        print(f"[CRITICAL] {message}")
+
 class LoggerManager:
     def __init__(self, log_dir="logs", log_name="train_log"):
         os.makedirs(log_dir, exist_ok=True)
