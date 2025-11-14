@@ -9,4 +9,4 @@ def train_decision_tree(X_train, y_train, max_depth=6, logger=None):
         logger.info('Decision Tree Classifier trained successfully.')
         logger.info('\nCross-validation scores: %s', ', '.join(map(str, cv_decisionTree)))
         logger.info('\nMean cross-validation score: %.2f', cv_decisionTree.mean())
-    return
+    return decisionTree, cv_decisionTree
