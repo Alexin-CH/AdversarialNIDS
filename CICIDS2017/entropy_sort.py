@@ -127,7 +127,7 @@ def _load_dataframe_from_preprocessing(logger=None):
 
 def choose_label_column(df):
     """
-    Choose the label/target column from a DataFrame using common candidate names.
+    Choose the label/target column from a DataFrame using common candidate names.(Optional)
 
     Inputs:
         df (pd.DataFrame): Dataset to inspect.
@@ -153,11 +153,6 @@ def rank_features(df, label_col=None, bins=10, save_csv=True, csv_path='feature_
         bins (int): Number of bins for discretization when features are numeric.
         save_csv (bool): If True, save the ranking to `csv_path`.
         csv_path (str): Path to write CSV results when save_csv is True.
-
-    Behavior:
-        - The selected label column is mapped to a binary target: 'BENIGN' for values equal to 'BENIGN',
-          and 'ATTACK' for all other values.
-        - Information gain IG(feature, label) is computed per feature and returned in descending order.
 
     Returns:
         pd.DataFrame: DataFrame with columns ['feature', 'information_gain'] sorted by information_gain descending.
