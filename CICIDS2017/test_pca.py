@@ -20,7 +20,7 @@ dataset = CICIDS2017(logger=lm.logger).encode().scale(scaler="minmax").optimize_
 from sklearn.decomposition import PCA
 
 pca_componants = []
-for n_components in range(1, len(dataset.data.columns) + 1, 2):
+for n_components in range(1, len(dataset.data.columns), 2):
     pca = PCA(n_components=n_components)
     pca_features = pca.fit_transform(dataset.scaled_features)
     pca_componants.append((n_components, pca, pca_features))
@@ -38,5 +38,5 @@ plt.title('Explained Variance vs Number of PCA Components')
 plt.xlabel('Number of PCA Components')
 plt.ylabel('Explained Variance Ratio')
 plt.grid()
-plt.savefig(f"{current_dir}/logs/{title}_pca_explained_variance_{date}.png")
+plt.savefig(f"{current_dir}/logs/pca_explained_variance.png")
 plt.close()
