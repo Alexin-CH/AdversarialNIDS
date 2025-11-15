@@ -20,7 +20,8 @@ def download_prepare(logger=SimpleLogger()):
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Dataset file not found at: {file_path}")
         
-        logger.info(f"Loading data from: {file_path}")
+        logger.info("Loading data")
+        logger.debug(file_path)
         data = pd.read_csv(file_path, low_memory=False)
         
         if data.empty:
@@ -31,28 +32,28 @@ def download_prepare(logger=SimpleLogger()):
         logger.info(f"Initial dimensions: {rows:,} rows x {cols} columns = {rows * cols:,} cells")
         
         # Strip whitespace from column names
-        logger.info("Cleaning column names")
+        logger.debug("Cleaning column names")
         col_names = {col: col.strip() for col in data.columns}
         data.rename(columns=col_names, inplace=True)
         
         # Remove duplicates
-        logger.info("Removing duplicate rows")
+        logger.debug("Removing duplicate rows")
         initial_rows = len(data)
         data.drop_duplicates(inplace=True)
         duplicates_removed = initial_rows - len(data)
         
-        logger.info(f"Removed {duplicates_removed:,} duplicate rows. Remaining: {len(data):,}")
+        logger.debug(f"Removed {duplicates_removed:,} duplicate rows. Remaining: {len(data):,}")
         
         # Remove rows with any missing values (initial pass)
-        logger.info("Removing rows with missing values (initial pass)")
+        logger.debug("Removing rows with missing values (initial pass)")
         initial_rows = len(data)
         data.dropna(inplace=True)
         na_removed = initial_rows - len(data)
         
-        logger.info(f"Removed {na_removed:,} rows with missing values. Remaining: {len(data):,}")
+        logger.debug(f"Removed {na_removed:,} rows with missing values. Remaining: {len(data):,}")
         
         # Handle infinity values
-        logger.info("Checking for infinite values in numeric columns")
+        logger.debug("Checking for infinite values in numeric columns")
         numeric_cols = data.select_dtypes(include=np.number).columns
         
         # Check for infinity values before replacement
@@ -60,21 +61,21 @@ def download_prepare(logger=SimpleLogger()):
         inf_count = inf_mask.sum()
         
         if inf_count.sum() > 0 and logger:
-            logger.info("Columns with infinite values:")
+            logger.debug("Columns with infinite values:")
             for col, count in inf_count[inf_count > 0].items():
-                logger.info(f"  {col}: {count:,} infinite values")
+                logger.debug(f"  {col}: {count:,} infinite values")
         
         # Replace infinite values with NaN
         initial_missing = data.isna().sum().sum()
         
-        logger.info(f"Missing values before processing infinite values: {initial_missing:,}")
+        logger.debug(f"Missing values before processing infinite values: {initial_missing:,}")
         data.replace([np.inf, -np.inf], np.nan, inplace=True)
         
         final_missing = data.isna().sum().sum()
         inf_converted = final_missing - initial_missing
         
-        logger.info(f"Missing values after processing infinite values: {final_missing:,}")
-        logger.info(f"Infinite values converted to NaN: {inf_converted:,}")
+        logger.debug(f"Missing values after processing infinite values: {final_missing:,}")
+        logger.debug(f"Infinite values converted to NaN: {inf_converted:,}")
         
         # Analyze missing values
         missing = data.isna().sum()
@@ -82,11 +83,11 @@ def download_prepare(logger=SimpleLogger()):
         
         if len(missing_cols) > 0 and logger:
             mis_per = (missing / len(data)) * 100
-            logger.info("Columns with missing values:")
+            logger.debug("Columns with missing values:")
             for col in missing_cols.index:
                 count = missing[col]
                 percentage = mis_per[col]
-                logger.info(f"  {col}: {count:,} ({percentage:.2f}%)")
+                logger.debug(f"  {col}: {count:,} ({percentage:.2f}%)")
         
         # Handle specific columns with median imputation
         flow_cols = ['Flow Bytes/s', 'Flow Packets/s']
@@ -96,14 +97,14 @@ def download_prepare(logger=SimpleLogger()):
                 missing_count = data[col].isna().sum()
                 
                 if missing_count > 0:
-                    logger.info(f"Filling {missing_count:,} missing values in '{col}' with median: {median_value:.2f}")
+                    logger.debug(f"Filling {missing_count:,} missing values in '{col}' with median: {median_value:.2f}")
                     data.fillna({col: median_value}, inplace=True)
         
         # Verify no missing values remain in flow columns
         for col in flow_cols:
                 if col in data.columns:
                     remaining_missing = data[col].isna().sum()
-                    logger.info(f"Remaining missing values in '{col}': {remaining_missing}")
+                    logger.debug(f"Remaining missing values in '{col}': {remaining_missing}")
 
         # Dropping columns with only one unique value
         num_unique = data.nunique()
@@ -113,9 +114,9 @@ def download_prepare(logger=SimpleLogger()):
         dropped_cols = one_variable.index
         data = data[not_one_variable]
 
-        logger.info(f"Dropping {len(dropped_cols)} columns with only one unique value:")
+        logger.debug(f"Dropping {len(dropped_cols)} columns with only one unique value:")
         for col in dropped_cols:
-            logger.info(f"  Dropped column: {col}")
+            logger.debug(f"  Dropped column: {col}")
         
         # Final dimensions
         final_rows, final_cols = data.shape
