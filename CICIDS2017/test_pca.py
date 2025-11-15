@@ -8,13 +8,13 @@ sys.path.append(current_dir)
 from scripts.logger import LoggerManager
 from CICIDS2017.preprocessing.dataset import CICIDS2017
 
-lm = LoggerManager(log_dir=f"{current_dir}/logs", log_name="test")
+lm = LoggerManager(log_dir=f"{current_dir}/logs", log_name="test_pca")
 lm.logger.info("Logger initialized")
 
-dataset = CICIDS2017(logger=lm.logger).encode().optimize_memory().scale()
+dataset = CICIDS2017(logger=lm.logger).encode().scale(scaler="minmax").optimize_memory()
 
 ##############################################
-##############  PCA Analysis  ##############
+###############  PCA Analysis  ###############
 ##############################################
 
 from sklearn.decomposition import PCA
