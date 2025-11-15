@@ -20,17 +20,20 @@ class CICIDS2017:
         self.logger = logger
         self.data = download_prepare(logger=self.logger)
 
-    def encode(self):
+    def encode(self, attack_encoder="label"):
         """ Encode the dataset using data_encoding function. """
-        self.data = data_encoding(self.data, logger=self.logger)
+        self.logger.info("Encoding attack labels...")
+        encoded = data_encoding(self.data, attack_encoder=attack_encoder, logger=self.logger)
+        self.data, self.is_attack, self.attack_classes = encoded
         return self
 
     def optimize_memory(self):
         """ Optimize memory usage of the dataset. """
+        self.logger.info("Optimizing memory usage of the dataset...")
         self.data = optimize_memory_usage(self.data, logger=self.logger)
         return self
 
-    def scale(self, scaler=StandardScaler(), logger=SimpleLogger()):
+    def scale(self, scaler="standard", logger=SimpleLogger()):
         """ Scale the dataset features using the provided scaler. """
         self.logger.info("Scaling dataset features...")
         self.scaled_features = scale(self.data, scaler=scaler, logger=self.logger)

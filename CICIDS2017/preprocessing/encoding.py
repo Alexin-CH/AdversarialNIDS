@@ -1,14 +1,14 @@
 import os
 import sys
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 current_dir = os.getcwd()
 sys.path.append(current_dir)
 
 from scripts.logger import SimpleLogger
 
-def data_encoding(data, logger=SimpleLogger()):
+def data_encoding(data, attack_encoder="label", logger=SimpleLogger()):
     """
     Encode the 'Label' column of the dataset into attack types and numerical labels.
     Args:
@@ -17,11 +17,15 @@ def data_encoding(data, logger=SimpleLogger()):
     Returns:
         pd.DataFrame: The DataFrame with encoded attack types and numerical labels.
     """
-    if logger:
-        logger.info("Starting data encoding process")
-        logger.info("Data Labels before encoding:")
-        for label, count in data['Label'].value_counts().items():
-            logger.info(f"  {label}: {count}")
+    available_encoders = {
+        "label": LabelEncoder(),
+        "onehot": OneHotEncoder(sparse_output=False)
+    }
+
+    if attack_encoder not in available_encoders:
+        logger.error(f"Encoder '{attack_encoder}' is not recognized.")
+        logger.error(f"Available encoders: {list(available_encoders.keys())}")
+        raise ValueError(f"Encoder '{attack_encoder}' is not recognized.")
 
     try:
         # Creating a dictionary that maps each label to its attack type
@@ -45,18 +49,24 @@ def data_encoding(data, logger=SimpleLogger()):
 
         # Creating a new column 'Attack Type' in the DataFrame based on the attack_map dictionary
         data['Attack Type'] = data['Label'].map(attack_map)
-
         data.drop('Label', axis = 1, inplace = True)
 
-        le = LabelEncoder()
-        data['Attack Number'] = le.fit_transform(data['Attack Type'])
+        encoder = available_encoders[attack_encoder]
+
+        if attack_encoder == "onehot":
+            is_attack = encoder.fit_transform((data['Attack Type'] != 'BENIGN').values.ravel().reshape(-1, 1))
+            attack_classes = encoder.fit_transform(data['Attack Type'].values.ravel().reshape(-1, 1))
+        else: # label encoding
+            is_attack = encoder.fit_transform((data['Attack Type'] != 'BENIGN').values.ravel())
+            attack_classes = encoder.fit_transform(data['Attack Type'].values.ravel())
 
         if logger:
-            logger.info("Data Labels after encoding:")
+            logger.debug("Data Labels after encoding:")
             for attack_type, count in data['Attack Type'].value_counts().items():
-                logger.info(f"  {attack_type}: {count}")
-        
-        return data
+                logger.debug(f"  {attack_type}: {count}")
+
+        logger.info(f"Attack labels encoded using {encoder} encoder.")        
+        return data, is_attack, attack_classes
 
     except KeyError as e:
         if logger:
