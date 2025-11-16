@@ -15,15 +15,18 @@ def download_prepare(logger=SimpleLogger(),flag=0):
     try:
         # Download dataset
         dataset = ""
+        name_csv = ""
         if flag ==0:
             dataset = "sweety18/cicids2017-full-dataset"
+            name_csv ="combine.csv"
         elif flag==1 :
             dataset ="mrwellsdavid/unsw-nb15"
+            name_csv = "UNSW-NB15_1.csv"
         else:
             logger.info("No corresponding Dataset") 
         logger.info("Downloading dataset: %s",dataset)
         path = kagglehub.dataset_download(dataset)
-        file_path = os.path.join(path, "combine.csv")
+        file_path = os.path.join(path, name_csv)
         
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Dataset file not found at: {file_path}")
