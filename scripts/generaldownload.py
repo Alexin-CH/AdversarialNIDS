@@ -37,7 +37,21 @@ def download_prepare(logger=SimpleLogger(),flag=0):
         
         if data.empty:
             raise ValueError("Dataset is empty")
-        
+        if flag==1:
+            columns = [
+            "srcip", "sport", "dstip", "dsport", "proto", "state", "dur",
+            "sbytes", "dbytes", "sttl", "dttl", "sloss", "dloss", "service",
+            "Sload", "Dload", "Spkts", "Dpkts", "swin", "dwin", "stcpb", "dtcpb",
+            "smeansz", "dmeansz", "trans_depth", "res_bdy_len", "Sjit", "Djit",
+            "Stime", "Ltime", "Sintpkt", "Dintpkt", "tcprtt", "synack", "ackdat",
+            "is_sm_ips_ports", "ct_state_ttl", "ct_flw_http_mthd", "is_ftp_login",
+            "ct_ftp_cmd", "ct_srv_src", "ct_srv_dst", "ct_dst_ltm", "ct_src_ltm",
+            "ct_src_dport_ltm", "ct_dst_sport_ltm", "ct_dst_src_ltm", "Attack Type", "label"]
+            data.columns = columns
+            data.drop('label', axis = 1, inplace = True)
+            data.drop('srcip', axis = 1, inplace = True)
+            data.drop('dstip', axis = 1, inplace = True)
+            data["Attack Type"].fillna("Benign", inplace=True)
         # Initial dimensions
         rows, cols = data.shape
         logger.info(f"Initial dimensions: {rows:,} rows x {cols} columns = {rows * cols:,} cells")
@@ -141,7 +155,6 @@ def download_prepare(logger=SimpleLogger(),flag=0):
         logger.info(f"Total rows removed: {total_removed:,} ({(total_removed / rows * 100):.2f}%)")
         logger.info(f"data retention rate: {retention_rate:.2f}%")
         logger.info("=" * 60)
-        
         return data
     
     except FileNotFoundError as e:

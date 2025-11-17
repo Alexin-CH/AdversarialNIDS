@@ -19,6 +19,11 @@ def scale(data, scaler="standard", logger=SimpleLogger()):
 
     scaler = available_scalers[scaler]
     features = data.drop(columns=['Attack Type'])
+    string_cols = features.select_dtypes(include=['object']).columns.tolist()
+    if string_cols != []:
+        for i in string_cols:
+            features[i] = features[i].astype(float)
+            
     scaled_features = scaler.fit_transform(features)
 
     logger.info(f"Features scaled using {scaler} scaler.")
