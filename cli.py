@@ -50,7 +50,7 @@ def load_previous_results(logger):
         logger.error('Fichier introuvable: %s', path)
         return None
     try:
-        df = pd.read_csv(path)
+        df = pd.read_csv(path) # Non, ce sera plutot un json contentant des résultats
         logger.info('Chargé %d lignes depuis %s', len(df), path)
         print(df.head())
         return df
@@ -87,7 +87,7 @@ def inspect_basic(df):
     
     num = df.select_dtypes(include=[np.number]) # Ne prendre que les colonnes numériques
     vars = num.var().sort_values(ascending=False)
-    top_features = list(vars.head(10).index)
+    top_features = list(vars.head(10).index) # à changer si besoin
     print('\nTop 10 features par variance (fallback):')
     for f in top_features:
         print(f)
@@ -110,7 +110,7 @@ def train_model_with_dataset(X, y, model_key, logger=None):
     #    model, cv = train_knn(X_train, y_train, n_neighbors=5, logger=logger)
     raise NotImplementedError('#TODO: Implement model training here')
 
-def run_attack_simulation(*args, **kwargs):
+def run_attack_simulation(X, y, attack_key, logger=None):
     # Attaques non implémentées dans cette CLI (sera fait a posteriori par l'équipe).
     raise NotImplementedError('#TODO: Implement attack simulations here')
 
@@ -144,7 +144,7 @@ def main():
                     sample_size = int(raw) if raw else 5000
                 except ValueError:
                     sample_size = 5000
-                sample_size = min(sample_size, len(ds.data))
+                sample_size = min(sample_size, len(ds.data)) # pour éviter les betises
                 df_work = ds.data.sample(n=sample_size, random_state=0)
                 subsampled = True
                 logger.info('Dataset sous-échantillonné à %d lignes', sample_size)
@@ -172,6 +172,7 @@ def main():
                     else:
                         logger.info('Choix modèle invalide')
                         continue
+                    train_model_with_dataset(ds.scaled_features, ds.attack_classes, model_name, logger=logger)
                     continue
         logger.info('Choix invalide')
 
