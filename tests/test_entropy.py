@@ -2,13 +2,13 @@ import os
 import sys
 from datetime import datetime
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
 
 from scripts.logger import LoggerManager
 from CICIDS2017.preprocessing.dataset import CICIDS2017
 
-lm = LoggerManager(log_dir=f"{current_dir}/logs", log_name="test_pca")
+lm = LoggerManager(log_dir=f"{root_dir}/logs", log_name="test_entropy")
 lm.logger.info("Logger initialized")
 
 dataset = CICIDS2017(logger=lm.logger).encode(attack_encoder="label").optimize_memory().scale(scaler="minmax")

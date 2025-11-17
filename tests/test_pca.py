@@ -2,13 +2,13 @@ import os
 import sys
 from datetime import datetime
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
 
 from scripts.logger import LoggerManager
 from CICIDS2017.preprocessing.dataset import CICIDS2017
 
-lm = LoggerManager(log_dir=f"{current_dir}/logs", log_name="test_pca")
+lm = LoggerManager(log_dir=f"{root_dir}/logs", log_name="test_pca")
 lm.logger.info("Logger initialized")
 
 dataset = CICIDS2017(logger=lm.logger).encode().scale(scaler="minmax").optimize_memory()
@@ -38,5 +38,5 @@ plt.title('Explained Variance vs Number of PCA Components')
 plt.xlabel('Number of PCA Components')
 plt.ylabel('Explained Variance Ratio')
 plt.grid()
-plt.savefig(f"{current_dir}/logs/pca_explained_variance.png")
+plt.savefig(f"{root_dir}/logs/pca_explained_variance.png")
 plt.close()
