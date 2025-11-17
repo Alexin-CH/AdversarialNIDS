@@ -10,7 +10,7 @@ sys.path.append(current_dir)
 from scripts.logger import SimpleLogger
 
 from scripts.generaldownload import download_prepare
-from CICIDS2017.preprocessing.encoding import data_encoding
+from CICIDS2017.preprocessing.encoding import data_encoding_CICI
 from scripts.encodinggeneral import data_encoding_UN
 from scripts.general_scaling import scale
 from scripts.general_memory_optimization import optimize_memory_usage
@@ -25,7 +25,7 @@ class CICIDS2017:
     def encode(self, attack_encoder="label"):
         """ Encode the dataset using data_encoding function. """
         self.logger.info("Encoding attack labels...")
-        encoded = data_encoding(self.data, attack_encoder=attack_encoder, logger=self.logger)
+        encoded = data_encoding_CICI(self.data, attack_encoder=attack_encoder, logger=self.logger)
         self.data, self.is_attack, self.attack_classes = encoded
         return self
 
