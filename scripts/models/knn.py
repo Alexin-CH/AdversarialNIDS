@@ -1,6 +1,6 @@
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score
-from logger import LoggerManager
+from scripts.logger import LoggerManager
 
 
 def train_knn(
