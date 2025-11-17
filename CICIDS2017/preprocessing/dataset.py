@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
 
 from scripts.logger import SimpleLogger
 
