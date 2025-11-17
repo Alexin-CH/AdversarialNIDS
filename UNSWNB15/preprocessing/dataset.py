@@ -14,11 +14,11 @@ from UNSWNB15.preprocessing.encoding import data_encoding
 from UNSWNB15.preprocessing.scaling import scale
 from UNSWNB15.preprocessing.memory_optimization import optimize_memory_usage
 
-class UNSWNB15:
-    def __init__(self, logger=SimpleLogger()):
+class UNSWNB15():
+    def __init__(self,size="full", logger=SimpleLogger()):
         """ Initialize the UNSWNB15 dataset class by downloading and preparing the dataset. """
         self.logger = logger
-        self.data = download_prepare(logger=self.logger, dataset_size="full")
+        self.data = download_prepare(logger=self.logger, dataset_size=size)
         self.categorical_cols = ["proto", "state", "service", "sport", "Destination Port"]
         for col in self.categorical_cols:
             self.data[col] = self.data[col].astype(str) # For Label Encoding compatibility
