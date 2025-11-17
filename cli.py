@@ -1,35 +1,20 @@
-#!/usr/bin/env python3
-"""
-Simple CLI for dataset/model/attack experimentation.
-Features:
-- Load previous results CSV or start a new run
-- Select dataset (CICIDS2017, UNSW-NB15)
-- Inspect dataset (shape, dtypes, class distribution, correlation)
-- Train simple models (DecisionTree, RandomForest, KNN)
-- Run simple adversarial-style perturbation attacks (Gaussian noise for demo)
-- Save run results to CSV with timestamp and metadata
-
-This CLI is intentionally lightweight and uses sklearn for models.
-"""
 from datetime import datetime
 import os
-import sys
 import pandas as pd
 import numpy as np
 
-from CICIDS2017.preprocessing import dataset
-from scripts.logger import LoggerManager
-# model training functions are imported lazily from scripts.models to avoid
-# import-time dependency issues in environments missing optional packages
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.feature_selection import mutual_info_classif
-from sklearn.utils import resample
 from CICIDS2017.preprocessing.dataset import CICIDS2017
+
+from scripts.logger import LoggerManager
 
 from scripts.models.decision_tree import train_decision_tree
 from scripts.models.random_forest import train_random_forest
 from scripts.models.knn import train_knn
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.utils import resample
 
 
 RESULTS_DIR = "results"
