@@ -117,6 +117,29 @@ def download_prepare(logger=SimpleLogger()):
         logger.debug(f"Dropping {len(dropped_cols)} columns with only one unique value:")
         for col in dropped_cols:
             logger.debug(f"  Dropped column: {col}")
+
+        # Creating a dictionary that maps each label to its attack type
+        attack_map = {
+            'BENIGN': 'BENIGN',
+            'DDoS': 'DDoS',
+            'DoS Hulk': 'DoS',
+            'DoS GoldenEye': 'DoS',
+            'DoS slowloris': 'DoS',
+            'DoS Slowhttptest': 'DoS',
+            'PortScan': 'Port Scan',
+            'FTP-Patator': 'Brute Force',
+            'SSH-Patator': 'Brute Force',
+            'Bot': 'Bot',
+            'Web Attack Brute Force': 'Web Attack',
+            'Web Attack XSS': 'Web Attack',
+            'Web Attack Sql Injection': 'Web Attack',
+            'Infiltration': 'Infiltration',
+            'Heartbleed': 'Heartbleed'
+        }
+
+        # Creating a new column 'Attack Type' in the DataFrame based on the attack_map dictionary
+        data['Attack Type'] = data['Label'].map(attack_map)
+        data.drop('Label', axis = 1, inplace = True)
         
         # Final dimensions
         final_rows, final_cols = data.shape
