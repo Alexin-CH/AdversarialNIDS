@@ -2,8 +2,8 @@ import os
 import sys
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
-sys.path.append(root_dir)
+current_dir = os.getcwd()
+sys.path.append(current_dir)
 
 from scripts.logger import SimpleLogger
 
@@ -19,6 +19,7 @@ def scale(data, scaler="standard", logger=SimpleLogger()):
 
     scaler = available_scalers[scaler]
     features = data.drop(columns=['Attack Type'])
+            
     scaled_features = scaler.fit_transform(features)
 
     logger.info(f"Features scaled using {scaler} scaler.")

@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
 
 from scripts.logger import SimpleLogger
 
@@ -15,7 +15,7 @@ from CICIDS2017.preprocessing.scaling import scale
 from CICIDS2017.preprocessing.memory_optimization import optimize_memory_usage
 
 class CICIDS2017:
-    def __init__(self, logger=SimpleLogger()):
+    def __init__(self, dataset_size=None, logger=SimpleLogger()):
         """ Initialize the CICIDS2017 dataset class by downloading and preparing the dataset. """
         self.logger = logger
         self.data = download_prepare(logger=self.logger)

@@ -4,29 +4,65 @@ import pandas as pd
 import numpy as np  
 import kagglehub
 
-root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
-sys.path.append(root_dir)
+current_dir = os.getcwd()
+sys.path.append(current_dir)
 
 from scripts.logger import SimpleLogger
 
-def download_prepare(logger=SimpleLogger()):
-    """ Download and prepare the CICIDS2017 dataset. """
+def download_prepare(logger=SimpleLogger(), dataset_size="full"):
+    """ Download and prepare the corresponding dataset. """
     try:
         # Download dataset
-        logger.info("Downloading dataset: sweety18/cicids2017-full-dataset")
-        path_cicids2017 = kagglehub.dataset_download("sweety18/cicids2017-full-dataset")
-        file_path = os.path.join(path_cicids2017, "combine.csv")
-        
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Dataset file not found at: {file_path}")
-        
-        logger.info("Loading data")
-        logger.debug(file_path)
-        data = pd.read_csv(file_path, low_memory=False)
+        dataset = "mrwellsdavid/unsw-nb15"
+        if dataset_size == "small":
+            name_csv = ["UNSW-NB15_1.csv"]
+        elif dataset_size == "full":
+            name_csv = [
+                "UNSW-NB15_1.csv",
+                "UNSW-NB15_2.csv",
+                "UNSW-NB15_3.csv",
+                "UNSW-NB15_4.csv"
+            ]
+        else:
+            logger.error("Dataset size not recognized")
+            raise ValueError("Dataset size not recognized")
+
+        logger.info(f"Downloading dataset: {dataset}")
+        path = kagglehub.dataset_download(dataset)
+        logger.debug(f"Dataset downloaded to: {path}")
+
+        columns = [
+            'srcip', 'sport', 'dstip', 'Destination Port', 'proto', 'state',
+            'Flow Duration', 'Total Length of Fwd Packets', 'Total Length of Bwd Packets',
+            'sttl', 'dttl', 'sloss', 'dloss', 'service', 'Fwd Packets/s', 'Bwd Packets/s',
+            'Total Fwd Packets', 'Total Backward Packets', 'Init_Win_bytes_forward',
+            'Init_Win_bytes_backward', 'stcpb', 'dtcpb', 'Avg Fwd Segment Size',
+            'Avg Bwd Segment Size', 'trans_depth', 'res_bdy_len', 'Sjit', 'Djit',
+            'Stime', 'Ltime', 'Sintpkt', 'Dintpkt', 'tcprtt', 'synack', 'ackdat',
+            'is_sm_ips_ports', 'ct_state_ttl', 'ct_flw_http_mthd', 'is_ftp_login',
+            'ct_ftp_cmd', 'ct_srv_src', 'ct_srv_dst', 'ct_dst_ltm', 'ct_src_ltm',
+            'ct_src_dport_ltm', 'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'Attack Type', 'label'
+        ]
+
+        colums_to_drop = ['label', 'srcip', 'dstip']
+
+        data_frames = []
+        for name in name_csv:
+            file_path = os.path.join(path, name)
+            df = pd.read_csv(file_path, low_memory=False)
+
+            df.columns = columns
+            df.drop(columns=colums_to_drop, inplace=True)
+            df["Attack Type"] = df["Attack Type"].fillna("Benign")
+
+            logger.info(f"Loaded {name} with shape: {df.shape}")
+            data_frames.append(df)
+        data = pd.concat(data_frames, ignore_index=True, axis=0)
+        logger.info(f"DataFrame shape: {data.shape}")
         
         if data.empty:
             raise ValueError("Dataset is empty")
-        
+
         # Initial dimensions
         rows, cols = data.shape
         logger.info(f"Initial dimensions: {rows:,} rows x {cols} columns = {rows * cols:,} cells")
@@ -88,23 +124,6 @@ def download_prepare(logger=SimpleLogger()):
                 count = missing[col]
                 percentage = mis_per[col]
                 logger.debug(f"  {col}: {count:,} ({percentage:.2f}%)")
-        
-        # Handle specific columns with median imputation
-        flow_cols = ['Flow Bytes/s', 'Flow Packets/s']
-        for col in flow_cols:
-            if col in data.columns:
-                median_value = data[col].median()
-                missing_count = data[col].isna().sum()
-                
-                if missing_count > 0:
-                    logger.debug(f"Filling {missing_count:,} missing values in '{col}' with median: {median_value:.2f}")
-                    data.fillna({col: median_value}, inplace=True)
-        
-        # Verify no missing values remain in flow columns
-        for col in flow_cols:
-                if col in data.columns:
-                    remaining_missing = data[col].isna().sum()
-                    logger.debug(f"Remaining missing values in '{col}': {remaining_missing}")
 
         # Dropping columns with only one unique value
         num_unique = data.nunique()
@@ -129,7 +148,6 @@ def download_prepare(logger=SimpleLogger()):
         logger.info(f"Total rows removed: {total_removed:,} ({(total_removed / rows * 100):.2f}%)")
         logger.info(f"data retention rate: {retention_rate:.2f}%")
         logger.info("=" * 60)
-        
         return data
     
     except FileNotFoundError as e:
