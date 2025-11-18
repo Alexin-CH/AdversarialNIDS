@@ -1,6 +1,6 @@
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
-from logger import LoggerManager
+from scripts.logger import LoggerManager
 
 def train_random_forest(
     X_train,
