@@ -14,6 +14,7 @@ from CICIDS2017.preprocessing.memory_optimization import optimize_memory_usage
 from CICIDS2017.preprocessing.encoding import data_encoding
 from CICIDS2017.preprocessing.scaling import scale
 from CICIDS2017.preprocessing.spliting import split_data
+from CICIDS2017.preprocessing.subset import subset_indices
 
 class CICIDS2017:
     def __init__(self, dataset_size=None, logger=SimpleLogger()):
@@ -41,17 +42,34 @@ class CICIDS2017:
         self.scaled_features = scale(self.data, scaler=scaler, logger=self.logger)
         return self
         
-    def split(self, multiclass=False, test_size=0.2, toTensor=False, oneHot=False, apply_smote=False):
+    def split(self, test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False):
         """ Split the dataset into training and testing sets. """
         self.logger.info("Splitting dataset into training and testing sets...")
 
         data_split = split_data(
             X=self.scaled_features,
-            y=self.attack_classes if multiclass else self.is_attack,
+            y=self.attack_classes if self.multi_class else self.is_attack,
             test_size=test_size,
-            toTensor=toTensor,
+            to_tensor=to_tensor,
             apply_smote=apply_smote,
-            oneHot=oneHot,
+            one_hot=one_hot,
             logger=self.logger
         )
         return data_split
+
+    def subset(self, size=None, multi_class=False):
+        """ Undersample the dataset to the specified size. """
+        self.logger.info(f"Subsetting dataset to size: {size}...")
+        self.multi_class = multi_class
+
+        indices = subset_indices(
+            self.attack_classes if self.multi_class else self.is_attack,
+            size=size,
+            logger=self.logger
+        )
+        self.data = self.data.iloc[indices].reset_index(drop=True)
+        self.scaled_features = self.scaled_features[indices]
+        self.is_attack = self.is_attack[indices]
+        self.attack_classes = self.attack_classes[indices]
+        return self
+        
