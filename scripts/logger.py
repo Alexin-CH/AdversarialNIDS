@@ -24,12 +24,13 @@ class SimpleLogger:
         print(f"[CRITICAL] {message}")
 
 class LoggerManager:
-    def __init__(self, log_dir="logs", log_name="train_log"):
+    def __init__(self, log_dir="logs", log_name="log"):
         os.makedirs(log_dir, exist_ok=True)
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         os.makedirs(log_dir, exist_ok=True)
-        self.log_path = os.path.join(log_dir, f"{log_name}_{timestamp}.log")
+        self.title = f"{log_name}_{timestamp}"
+        self.log_path = os.path.join(log_dir, f"{self.title}.log")
         
         self.logger = logging.getLogger(log_name)
         self.logger.setLevel(logging.DEBUG)
@@ -61,3 +62,8 @@ class LoggerManager:
     def get_logger(self):
         """Return the logger instance."""
         return self.logger
+
+    def get_title(self):
+        """Return the log title."""
+        return self.title
+    
