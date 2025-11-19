@@ -6,6 +6,7 @@ logs/
 *.log
 
 loss_img/
+reports_img/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
