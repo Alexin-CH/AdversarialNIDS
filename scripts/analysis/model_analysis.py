@@ -18,7 +18,7 @@ from scripts.analysis.classification_report import plot_classification_report
 
 
 def perform_model_analysis(model, X_test, y_test, dir, logger, model_name="Model", 
-                          class_names=None, plot=True, device=None):
+                          class_names=None, plot=True, save_fig=True, device=None):
     """
     Perform complete classification analysis with confusion matrix and report visualization.
     
@@ -83,11 +83,12 @@ def perform_model_analysis(model, X_test, y_test, dir, logger, model_name="Model
     
     fig.suptitle(f'Model Analysis - {model_name}', fontsize=16, weight='bold')
 
-    # Save figure to dir
-    fig_path = os.path.join(dir, 'reports_img')
-    os.makedirs(fig_path, exist_ok=True)
-    filename = f"{model_name.replace(' ', '_')}_model_analysis.png"
-    fig.savefig(os.path.join(fig_path, filename))
+    if save_fig:
+        # Save figure to dir
+        fig_path = os.path.join(dir, 'reports_img')
+        os.makedirs(fig_path, exist_ok=True)
+        filename = f"{model_name.replace(' ', '_')}_model_analysis.png"
+        fig.savefig(os.path.join(fig_path, filename))
     
     if plot:
         plt.show()
