@@ -17,8 +17,8 @@ from scripts.analysis.pytorch_prediction import get_pytorch_predictions
 from scripts.analysis.classification_report import plot_classification_report
 
 
-def perform_model_analysis(model, X_test, y_test, logger, model_name="Model", 
-                          class_names=None, device=None):
+def perform_model_analysis(model, X_test, y_test, dir, logger, model_name="Model", 
+                          class_names=None, plot=True, device=None):
     """
     Perform complete classification analysis with confusion matrix and report visualization.
     
@@ -68,11 +68,11 @@ def perform_model_analysis(model, X_test, y_test, logger, model_name="Model",
     # Create visualization with confusion matrix and report table
     fig = plt.figure(figsize=(16, 6))
     gs = fig.add_gridspec(1, 2, wspace=0.3)
-    
+        
     # Plot confusion matrix (left)
     ax_cm = fig.add_subplot(gs[0, 0])
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-               xticklabels=class_names, yticklabels=class_names, ax=ax_cm)
+            xticklabels=class_names, yticklabels=class_names, ax=ax_cm)
     ax_cm.set_title('Confusion Matrix', fontsize=12, weight='bold')
     ax_cm.set_xlabel('Predicted Label')
     ax_cm.set_ylabel('True Label')
@@ -82,7 +82,15 @@ def perform_model_analysis(model, X_test, y_test, logger, model_name="Model",
     plot_classification_report(report_dict, ax_report, 'Classification Report')
     
     fig.suptitle(f'Model Analysis - {model_name}', fontsize=16, weight='bold')
-    #plt.tight_layout()
-    plt.show()
+
+    # Save figure to dir
+    fig_path = os.path.join(dir, 'reports_img')
+    os.makedirs(fig_path, exist_ok=True)
+    filename = f"{model_name.replace(' ', '_')}_model_analysis.png"
+    fig.savefig(os.path.join(fig_path, filename))
+    
+    if plot:
+        plt.show()
+    plt.close(fig)
 
     return cm, report_dict
