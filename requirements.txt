@@ -26,3 +26,10 @@ scikit-learn>=1.3.0
 scipy>=1.10.0
 imblearn
 torch
+
+# Adversarial Robustness Framework
+adversarial-robustness-toolbox
+
+# Deep Learning Frameworks (Required for Surrogate Model and ART dependencies)
+torch
+tensorflow
