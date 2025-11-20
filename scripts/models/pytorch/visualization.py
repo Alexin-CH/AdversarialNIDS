@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 
-def display_loss(list_epoch_loss, list_val_loss, title, dir, logger, epoch_min=2):
+def display_loss(list_epoch_loss, list_val_loss, title, dir, logger, plot=True, epoch_min=2):
     logger.info("Plotting loss curve...")
     # Plotting loss curve with linear scale
     plt.figure(figsize=(10, 8))
@@ -31,4 +31,8 @@ def display_loss(list_epoch_loss, list_val_loss, title, dir, logger, epoch_min=2
     os.makedirs(f"{dir}/loss_img", exist_ok=True)
     plt.savefig(loss_plot_path, bbox_inches='tight', dpi=300)
     logger.info(f"Loss curve saved as {loss_plot_path}")
-    plt.show()
+
+    if plot:
+        plt.show()
+    plt.close()
+    
