@@ -1,7 +1,7 @@
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score
-
 import numpy as np
+
 def find_optimal_k(X_train, y_train, k_range=range(3, 31, 2), cv=5, logger=None):
     """
     Find the optimal number of neighbors using cross-validation.

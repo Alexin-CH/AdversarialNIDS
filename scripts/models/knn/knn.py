@@ -8,6 +8,7 @@ def train_knn(
     weights='uniform',
     metric='minkowski',
     p=2,
+    cv_test=False,
     cv=5,
     random_state=0,
     logger=None
@@ -51,12 +52,11 @@ def train_knn(
         p=p,
         n_jobs=-1
     )
+    if cv_test:
+        if logger is not None:
+            logger.info("Performing KNN cross-validation...")
     
-    # Perform cross-validation
-    if logger is not None:
-        logger.info("Performing KNN cross-validation...")
-    
-    cv_scores = cross_val_score(knn, X_train, y_train, cv=cv, n_jobs=-1)
+        cv_scores = cross_val_score(knn, X_train, y_train, cv=cv, n_jobs=-1)
     
     # Train on full training set
     if logger is not None:
@@ -71,7 +71,10 @@ def train_knn(
         logger.info('=' * 50)
         logger.info(f'Parameters: n_neighbors={n_neighbors}, weights={weights}, '
                    f'metric={metric}, p={p}')
+    
+    if cv_test:
         logger.info(f'Cross-validation scores: {cv_scores}')
         logger.info(f'Mean CV score: {cv_scores.mean():.4f} (+/- {cv_scores.std():.4f})')
-    
-    return knn, cv_scores
+        return knn, cv_scores
+    else:
+        return knn, None

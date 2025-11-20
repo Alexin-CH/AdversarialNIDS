@@ -1,12 +1,13 @@
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
-def prune_tree_model(model, X_val, y_val, logger=None):
+
+def prune_tree_model(dt_model, X_val, y_val, logger=None):
     """
     Perform cost complexity pruning on decision tree.
     
     Parameters:
     -----------
-    model : DecisionTreeClassifier
+    dt_model : DecisionTreeClassifier
         Trained Decision Tree model.
     X_val : array-like
         Validation features.
@@ -22,11 +23,7 @@ def prune_tree_model(model, X_val, y_val, logger=None):
     best_alpha : float
         Best alpha value found.
     """
-    # Extract DT model if it's in a pipeline
-    if hasattr(model, 'named_steps'):
-        dt_model = model.named_steps['dt']
-    else:
-        dt_model = model
+
     
     # Get cost complexity pruning path
     path = dt_model.cost_complexity_pruning_path(X_val, y_val)

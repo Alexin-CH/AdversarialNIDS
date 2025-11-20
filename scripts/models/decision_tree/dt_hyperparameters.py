@@ -4,28 +4,6 @@ from sklearn.model_selection import GridSearchCV
 def tune_dt_hyperparameters(X_train, y_train, cv=5, n_jobs=-1, logger=None):
     """
     Perform grid search to find optimal Decision Tree hyperparameters.
-    
-    Parameters:
-    -----------
-    X_train : array-like
-        Training features.
-    y_train : array-like
-        Training labels.
-    cv : int, default=5
-        Number of cross-validation folds.
-    n_jobs : int, default=-1
-        Number of parallel jobs.
-    logger : Logger or None
-        Optional logger instance.
-    
-    Returns:
-    --------
-    best_params : dict
-        Best hyperparameters found.
-    best_score : float
-        Best CV score achieved.
-    grid_search : GridSearchCV
-        Fitted GridSearchCV object.
     """
     # Define parameter grid
     param_grid = {

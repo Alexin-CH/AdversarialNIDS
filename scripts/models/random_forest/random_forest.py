@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score, GridSearchCV
+from sklearn.model_selection import cross_val_score
 
 def train_random_forest(
     X_train,
@@ -10,13 +10,13 @@ def train_random_forest(
     min_samples_leaf=2,
     max_features='sqrt',
     random_state=0,
+    cv_test=False,
     cv=5,
     class_weight='balanced',
     logger=None
 ):
     """
     Train and evaluate a Random Forest classifier with cross-validation.
-
     Parameters:
     -----------
     X_train : array-like
@@ -62,10 +62,11 @@ def train_random_forest(
     )
     
     # Perform cross-validation
-    if logger is not None:
-        logger.info("Performing Random Forest cross-validation...")
+    if cv_test:
+        if logger is not None:
+            logger.info("Performing Random Forest cross-validation...")
     
-    cv_scores = cross_val_score(rf, X_train, y_train, cv=cv, n_jobs=-1)
+        cv_scores = cross_val_score(rf, X_train, y_train, cv=cv, n_jobs=-1)
     
     # Train the model on full training set
     if logger is not None:
@@ -80,7 +81,9 @@ def train_random_forest(
         logger.info('=' * 50)
         logger.info(f'Parameters: n_estimators={n_estimators}, max_depth={max_depth}, '
                    f'max_features={max_features}')
+    if cv_test:
         logger.info(f'Cross-validation scores: {cv_scores}')
         logger.info(f'Mean CV score: {cv_scores.mean():.4f} (+/- {cv_scores.std():.4f})')
-    
-    return rf, cv_scores
+        return rf, cv_scores
+    else:
+        return rf, None

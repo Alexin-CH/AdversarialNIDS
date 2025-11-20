@@ -1,61 +1,6 @@
-"""
-Model Utilities Module
-
-Shared utility functions for data preprocessing, evaluation, and diagnostics
-that are reused across all machine learning models.
-"""
-
-import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler
-from sklearn.feature_selection import SelectKBest, f_classif, VarianceThreshold
-
-
-def evaluate_model(model, X_test, y_test, logger=None):
-    """
-    Evaluate trained model on test set with comprehensive metrics.
-    
-    Parameters:
-    -----------
-    model : estimator
-        Trained classifier model or pipeline.
-    X_test : array-like
-        Test features.
-    y_test : array-like
-        Test labels.
-    logger : Logger or None, default=None
-        Optional logger instance.
-    
-    Returns:
-    --------
-    results : dict
-        Dictionary containing:
-        - 'accuracy': float, test set accuracy
-        - 'predictions': array, predicted labels
-        - 'report': str, classification report
-        - 'confusion_matrix': array, confusion matrix
-    """
-    # Make predictions
-    y_pred = model.predict(X_test)
-    
-    # Calculate metrics
-    acc = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred)
-    cm = confusion_matrix(y_test, y_pred)
-    
-    # Log results
-    if logger is not None:
-        logger.info(f'Test set accuracy: {acc:.4f}')
-        logger.info(f'Classification report:\n{report}')
-    
-    return {
-        'accuracy': acc,
-        'predictions': y_pred,
-        'report': report,
-        'confusion_matrix': cm
-    }
-
+from sklearn.feature_selection import SelectKBest, f_classif
 
 def check_data_leakage(X, y, logger=None):
     """
@@ -128,7 +73,6 @@ def check_data_leakage(X, y, logger=None):
     
     return diagnostics
 
-
 def remove_low_variance_features(X, threshold=0.01, logger=None):
     """
     Remove features with very low variance.
@@ -160,74 +104,7 @@ def remove_low_variance_features(X, threshold=0.01, logger=None):
     
     return X_filtered, low_var_features
 
-
-def prepare_data(data, target_column='Attack Type', leakage_features=None, 
-                 remove_low_var=True, var_threshold=0.01, logger=None):
-    """
-    Comprehensive data preparation pipeline.
-    
-    Parameters:
-    -----------
-    data : DataFrame
-        Raw dataset.
-    target_column : str, default='Attack Type'
-        Name of target column.
-    leakage_features : list or None
-        List of features to remove (data leakage).
-    remove_low_var : bool, default=True
-        Whether to remove low variance features.
-    var_threshold : float, default=0.01
-        Variance threshold for feature removal.
-    logger : Logger or None
-        Optional logger instance.
-    
-    Returns:
-    --------
-    X : DataFrame
-        Prepared feature matrix.
-    y : Series
-        Target labels.
-    removed_features : dict
-        Dictionary with 'leakage' and 'low_variance' feature lists.
-    """
-    removed_features = {'leakage': [], 'low_variance': []}
-    
-    # Split features and labels
-    X = data.drop(target_column, axis=1)
-    y = data[target_column]
-    
-    # Remove leakage features
-    if leakage_features is not None:
-        existing_leakage = [f for f in leakage_features if f in X.columns]
-        if existing_leakage:
-            if logger:
-                logger.warning(f"🚨 REMOVING LEAKAGE FEATURES: {existing_leakage}")
-            X = X.drop(columns=existing_leakage)
-            removed_features['leakage'] = existing_leakage
-    
-    # Convert to numeric
-    X = X.apply(pd.to_numeric, errors='coerce')
-    
-    # Handle missing values
-    if X.isnull().sum().sum() > 0:
-        n_missing = X.isnull().sum().sum()
-        if logger:
-            logger.info(f"Filling {n_missing} missing values with 0")
-        X = X.fillna(0)
-    
-    # Remove low variance features
-    if remove_low_var:
-        X, low_var = remove_low_variance_features(X, threshold=var_threshold, logger=logger)
-        removed_features['low_variance'] = low_var
-    
-    if logger:
-        logger.info(f"Final feature matrix shape: {X.shape}")
-        logger.info(f"Target distribution:\n{y.value_counts()}")
-    
-    return X, y, removed_features
-
-
-def get_feature_importance(model, feature_names, top_n=10, logger=None):
+def get_tree_feature_importance(model, feature_names, top_n=10, logger=None):
     """
     Extract feature importance from tree-based models.
     
@@ -287,37 +164,6 @@ def get_feature_importance(model, feature_names, top_n=10, logger=None):
     
     return top_features
 
-
-def standardize_features(X_train, X_test=None):
-    """
-    Standardize features using StandardScaler.
-    
-    Parameters:
-    -----------
-    X_train : array-like
-        Training features.
-    X_test : array-like or None
-        Test features. If None, only transforms training data.
-    
-    Returns:
-    --------
-    X_train_scaled : array
-        Scaled training features.
-    X_test_scaled : array or None
-        Scaled test features (if X_test provided).
-    scaler : StandardScaler
-        Fitted scaler object.
-    """
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    
-    if X_test is not None:
-        X_test_scaled = scaler.transform(X_test)
-        return X_train_scaled, X_test_scaled, scaler
-    
-    return X_train_scaled, None, scaler
-
-
 def select_k_best_features(X_train, y_train, X_test=None, k=30):
     """
     Select k best features using ANOVA F-value.
@@ -354,7 +200,6 @@ def select_k_best_features(X_train, y_train, X_test=None, k=30):
         return X_train_selected, X_test_selected, selector, selected_indices
     
     return X_train_selected, None, selector, selected_indices
-
 
 def balance_classes_info(y, logger=None):
     """
@@ -399,109 +244,3 @@ def balance_classes_info(y, logger=None):
             logger.info(f"  {cls}: {count} ({pct:.2f}%)")
     
     return info
-
-
-def remove_rare_classes(X, y, min_samples=2, logger=None):
-    """
-    Remove classes with fewer than min_samples samples.
-    
-    Required for stratified train-test split.
-    
-    Parameters:
-    -----------
-    X : array-like
-        Feature matrix.
-    y : array-like
-        Target labels.
-    min_samples : int, default=2
-        Minimum number of samples required per class.
-    logger : Logger or None
-        Optional logger instance.
-    
-    Returns:
-    --------
-    X_filtered : array-like
-        Feature matrix with rare classes removed.
-    y_filtered : array-like
-        Target labels with rare classes removed.
-    removed_classes : list
-        List of removed class labels.
-    """
-    class_counts = pd.Series(y).value_counts()
-    valid_classes = class_counts[class_counts >= min_samples].index
-    removed_classes = class_counts[class_counts < min_samples].index.tolist()
-    
-    mask = pd.Series(y).isin(valid_classes)
-    
-    if isinstance(X, pd.DataFrame):
-        X_filtered = X[mask]
-    else:
-        X_filtered = X[mask.values]
-    
-    if isinstance(y, pd.Series):
-        y_filtered = y[mask]
-    else:
-        y_filtered = y[mask.values]
-    
-    if logger and len(removed_classes) > 0:
-        logger.warning(f"Removed {len(removed_classes)} rare classes with <{min_samples} samples: "
-                      f"{removed_classes}")
-    
-    return X_filtered, y_filtered, removed_classes
-
-
-def print_performance_summary(cv_scores, test_accuracy, model_name, 
-                             config=None, logger=None):
-    """
-    Print a formatted performance summary.
-    
-    Parameters:
-    -----------
-    cv_scores : array
-        Cross-validation scores.
-    test_accuracy : float
-        Test set accuracy.
-    model_name : str
-        Name of the model.
-    config : dict or None
-        Model configuration parameters.
-    logger : Logger or None
-        Optional logger instance.
-    """
-    summary = []
-    summary.append("=" * 70)
-    summary.append(f"{model_name.upper()} PERFORMANCE SUMMARY")
-    summary.append("=" * 70)
-    summary.append(f"Mean CV Score: {cv_scores.mean():.4f} (+/- {cv_scores.std():.4f})")
-    summary.append(f"Test Accuracy: {test_accuracy:.4f}")
-    summary.append(f"CV-Test Gap: {abs(cv_scores.mean() - test_accuracy):.4f}")
-    
-    if config:
-        summary.append("\nModel Configuration:")
-        for key, value in config.items():
-            summary.append(f"  - {key}: {value}")
-    
-    # Performance interpretation
-    summary.append("\nPerformance Assessment:")
-    if cv_scores.mean() > 0.99:
-        summary.append("  ⚠️  WARNING: CV score > 0.99 may indicate data leakage!")
-    elif cv_scores.mean() >= 0.95:
-        summary.append("  ✓ Excellent performance (CV ≥ 0.95)")
-    elif cv_scores.mean() >= 0.90:
-        summary.append("  ✓ Good performance (CV ≥ 0.90)")
-    else:
-        summary.append("  ⚠️  Performance below 0.90 - consider improvements")
-    
-    # Overfitting check
-    gap = abs(cv_scores.mean() - test_accuracy)
-    if gap > 0.05:
-        summary.append(f"\n  ⚠️  Large CV-Test gap ({gap:.4f}) suggests overfitting")
-    else:
-        summary.append(f"\n  ✓ Good generalization (CV-Test gap: {gap:.4f})")
-    
-    summary_text = "\n".join(summary)
-    
-    if logger:
-        logger.info(summary_text)
-    else:
-        print(summary_text)

@@ -1,26 +1,13 @@
-
 # Module Classificateur Arbre de Décision
 
-Ce module fournit un ensemble de fonctions pour créer, entraîner, ajuster et analyser des modèles d'Arbre de Décision. Il inclut des utilitaires pour construire des pipelines avec étapes de prétraitement ainsi que pour entraîner des modèles autonomes sans pipeline.
+Ce module fournit un ensemble de fonctions pour créer, entraîner, ajuster et analyser des modèles d'Arbre de Décision.
 
 ## Aperçu des Fonctions
 
-### create_dt_pipeline(...)
-
-Crée un pipeline d'entraînement complet pouvant inclure :
-
-* StandardScaler optionnel
-* Suréchantillonnage SMOTE optionnel
-* Un DecisionTreeClassifier comme estimateur final
-
-Cette fonction retourne un objet ImbPipeline. Elle est destinée à des workflows propres et reproductibles où les étapes de prétraitement et d'entraînement doivent être appliquées de façon cohérente.
-
 ### train_decision_tree(...)
 
-Entraîne un DecisionTreeClassifier autonome sans pipeline.
+Entraîne un DecisionTreeClassifier.
 Effectue une validation croisée puis ajuste le modèle sur l'ensemble d'entraînement complet.
-
-Cette fonction est utile pour des tests rapides ou lorsque le prétraitement est déjà effectué manuellement.
 
 ### analyze_tree_complexity(model, ...)
 
