@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 
@@ -36,4 +37,13 @@ class NetworkIntrustionCNN(nn.Module):
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+    
+    def save_model(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(self.state_dict(), path)
+
+    def load_model(self, path, device='cpu'):
+        self.load_state_dict(torch.load(path, map_location=device))
+        self.to(device)
+        return self
     
