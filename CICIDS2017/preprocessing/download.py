@@ -20,7 +20,7 @@ def download_prepare(logger=SimpleLogger()):
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Dataset file not found at: {file_path}")
         
-        logger.info("Loading data")
+        logger.info("Loading dataset into DataFrame")
         logger.debug(file_path)
         data = pd.read_csv(file_path, low_memory=False)
         
@@ -129,17 +129,16 @@ def download_prepare(logger=SimpleLogger()):
             'PortScan': 'Port Scan',
             'FTP-Patator': 'Brute Force',
             'SSH-Patator': 'Brute Force',
-            'Bot': 'Bot',
             'Web Attack Brute Force': 'Web Attack',
             'Web Attack XSS': 'Web Attack',
-            'Web Attack Sql Injection': 'Web Attack',
-            'Infiltration': 'Infiltration',
-            'Heartbleed': 'Heartbleed'
+            'Web Attack Sql Injection': 'Web Attack'
         }
+        # Drop Infiltration and Heartbleed
+        data.drop(columns=['Infiltration', 'Heartbleed', 'Bot'], errors='ignore', inplace=True)
 
         # Creating a new column 'Attack Type' in the DataFrame based on the attack_map dictionary
         data['Attack Type'] = data['Label'].map(attack_map)
-        data.drop('Label', axis = 1, inplace = True)
+        data.drop('Label', axis=1, inplace=True)
         
         # Final dimensions
         final_rows, final_cols = data.shape
@@ -164,4 +163,25 @@ def download_prepare(logger=SimpleLogger()):
         raise ValueError(error_msg)
     except Exception as e:
         logger.error(f"Error during preprocessing: {e}")
+        raise
+
+
+def data_distribution(data, logger=SimpleLogger()):
+    """ Display the distribution of data by attack type. """
+    try:
+        if type(data) is pd.DataFrame:
+            distribution = data['Attack Type'].value_counts()
+        else:
+            distribution = pd.Series(data).value_counts()
+        logger.info("Data Distribution by Attack Type:")
+        for attack_type, count in distribution.items():
+            logger.info(f"  {attack_type}: {count:,} instances")
+        
+        return distribution
+    
+    except KeyError as e:
+        logger.error(f"Key error: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error calculating data distribution: {e}")
         raise

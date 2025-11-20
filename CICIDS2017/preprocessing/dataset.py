@@ -15,6 +15,7 @@ from CICIDS2017.preprocessing.encoding import data_encoding
 from CICIDS2017.preprocessing.scaling import scale
 from CICIDS2017.preprocessing.spliting import split_data
 from CICIDS2017.preprocessing.subset import subset_indices
+from CICIDS2017.preprocessing.download import data_distribution
 
 class CICIDS2017:
     def __init__(self, dataset_size=None, logger=SimpleLogger()):
@@ -71,5 +72,13 @@ class CICIDS2017:
         self.scaled_features = self.scaled_features[indices]
         self.is_attack = self.is_attack[indices]
         self.attack_classes = self.attack_classes[indices]
-        return self
+        return self, self.multi_class
         
+    def distribution(self, data):
+        """ Display the distribution of attack classes in the dataset. """
+        self.logger.info("Calculating data distribution...")
+        distribution = data_distribution(
+            data,
+            logger=self.logger
+        )
+        return distribution
