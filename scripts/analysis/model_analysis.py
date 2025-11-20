@@ -1,0 +1,97 @@
+import os
+import sys
+
+import torch
+import torch.nn as nn
+import numpy as np
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.metrics import confusion_matrix, classification_report
+
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
+
+from scripts.analysis.pytorch_prediction import get_pytorch_predictions
+from scripts.analysis.classification_report import plot_classification_report
+
+
+def perform_model_analysis(model, X_test, y_test, dir, logger, model_name="Model", 
+                          class_names=None, plot=True, save_fig=True, device=None):
+    """
+    Perform complete classification analysis with confusion matrix and report visualization.
+    
+    Works with both PyTorch and scikit-learn models.
+    
+    Args:
+        model: Trained classification model (PyTorch nn.Module or sklearn model)
+        X_test: Test features (numpy array, pandas DataFrame, or torch Tensor)
+        y_test: True labels (numpy array, pandas Series, or torch Tensor)
+        logger: Logger instance for recording results
+        model_name: Name of the model for titles and logs (default: "Model")
+        class_names: List of class names for labels (default: auto-generated)
+        device: Device for PyTorch models ('cuda' or 'cpu', default: auto-detect)
+    
+    Outputs:
+        - Logs classification report to logger
+        - Displays side-by-side confusion matrix and classification report table
+    """
+    is_pytorch = isinstance(model, nn.Module)
+    
+    # Get predictions
+    if is_pytorch:
+        # Auto-detect device if not specified
+        if device is None:
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        logger.info(f"Running analysis for PyTorch model: {model_name} on device: {device}")
+        y_pred, y_true = get_pytorch_predictions(model, X_test, y_test, device)
+    else:
+        logger.info(f"Running analysis for scikit-learn model: {model_name}")
+        y_true = np.asarray(y_test)
+        y_pred = model.predict(X_test)
+    
+    # Generate class names if not provided
+    if class_names is None:
+        class_names = [str(i) for i in sorted(np.unique(y_true))]
+    
+    # Calculate metrics
+    report = classification_report(y_true, y_pred, target_names=class_names, digits=4, zero_division=0)
+    report_dict = classification_report(y_true, y_pred, target_names=class_names, 
+                                       digits=4, output_dict=True, zero_division=0)
+    cm = confusion_matrix(y_true, y_pred)
+    
+    # Log classification report
+    log_header = f"Classification Report for {model_name}"
+    logger.debug(f"\n{log_header}\n{report}\n")
+    
+    # Create visualization with confusion matrix and report table
+    fig = plt.figure(figsize=(16, 6))
+    gs = fig.add_gridspec(1, 2, wspace=0.3)
+        
+    # Plot confusion matrix (left)
+    ax_cm = fig.add_subplot(gs[0, 0])
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=class_names, yticklabels=class_names, ax=ax_cm)
+    ax_cm.set_title('Confusion Matrix', fontsize=12, weight='bold')
+    ax_cm.set_xlabel('Predicted Label')
+    ax_cm.set_ylabel('True Label')
+    
+    # Plot classification report table (right)
+    ax_report = fig.add_subplot(gs[0, 1])
+    plot_classification_report(report_dict, ax_report, 'Classification Report')
+    
+    fig.suptitle(f'Model Analysis - {model_name}', fontsize=16, weight='bold')
+
+    if save_fig:
+        # Save figure to dir
+        fig_path = os.path.join(dir, 'reports_img')
+        os.makedirs(fig_path, exist_ok=True)
+        filename = f"{model_name.replace(' ', '_')}_model_analysis.png"
+        fig.savefig(os.path.join(fig_path, filename))
+    
+    if plot:
+        plt.show()
+    plt.close(fig)
+
+    return cm, report_dict
