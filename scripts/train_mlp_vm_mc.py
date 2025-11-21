@@ -85,7 +85,7 @@ model_mlp, train_losses_mlp, val_losses_mlp = train(
     train_loader=train_loader,
     val_loader=val_loader,
     title=f"{title}_{mlp_title}",
-    dir=root_dir,
+    dir=f"{root_dir}/results/weights",
     device=device,
     logger=logger
 )
@@ -94,7 +94,7 @@ display_loss(
     list_epoch_loss=train_losses_mlp,
     list_val_loss=val_losses_mlp,
     title=f"{title}_{mlp_title}",
-    dir=root_dir,
+    dir=f"{root_dir}/results/plots",
     plot=False,
     logger=logger,
     epoch_min=2
@@ -106,7 +106,7 @@ cm, cr = perform_model_analysis(
     y_test=y_val,
     logger=logger,
     model_name=f"{title}_{mlp_title}",
-    dir=root_dir,
+    dir=f"{root_dir}/results/analysis",
     plot=False,
     device=device
 )

@@ -71,7 +71,7 @@ model_mlp = NetworkIntrusionMLP(input_size=input_size, num_classes=num_classes).
 logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 
 learning_rate_mlp = 1e-2
-num_epochs_mlp = 1000
+num_epochs_mlp = 5000
 
 mlp_title = f"MLP_2c_{model_type}_{num_epochs_mlp}"
 
@@ -87,7 +87,7 @@ model_mlp, train_losses_mlp, val_losses_mlp = train(
     train_loader=train_loader,
     val_loader=val_loader,
     title=f"{title}_{mlp_title}",
-    dir=root_dir,
+    dir=f"{root_dir}/results/weights",
     device=device,
     logger=logger
 )
@@ -96,7 +96,7 @@ display_loss(
     list_epoch_loss=train_losses_mlp,
     list_val_loss=val_losses_mlp,
     title=f"{title}_{mlp_title}",
-    dir=root_dir,
+    dir=f"{root_dir}/results/plots",
     plot=False,
     logger=logger,
     epoch_min=2
@@ -108,7 +108,7 @@ cm, cr = perform_model_analysis(
     y_test=y_val,
     logger=logger,
     model_name=f"{title}_{mlp_title}",
-    dir=root_dir,
+    dir=f"{root_dir}/results/analysis",
     plot=False,
     device=device
 )
