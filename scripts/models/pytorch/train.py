@@ -6,14 +6,14 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
     list_epoch_loss = []
     list_val_loss = []
     count = len(str(int(num_epochs-1)))
-    lm.logger.info("Starting model training...")
-    lm.logger.info(f"Number of epochs: {num_epochs}")
+    logger.info("Starting model training...")
+    logger.info(f"Number of epochs: {num_epochs}")
 
     t0 = time.time()
     model.train()
     tqdm_epochs = tqdm(range(int(num_epochs)), desc="Training")
     for epoch in tqdm_epochs:
-        lm.logger.debug(f"Epoch {epoch + 1}/{num_epochs} started.")
+        logger.debug(f"Epoch {epoch + 1}/{num_epochs} started.")
         losses = []
 
         show_progress = True if epoch % max(num_epochs // 10, 1) == 0 else False
@@ -35,14 +35,14 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
             counter = '0' * zeros + counter
             current_lr = scheduler.get_last_lr()[0]
             tqdm_batchs.set_description(f"[{counter}] Batch Loss: {loss:.6f}, LR: {current_lr:.6f}, Processing")
-            lm.logger.debug(f"Batch {batch_idx + 1}/{len(train_loader)} - Loss: {loss.item():.6f}, LR: {current_lr:.6f}")
+            logger.debug(f"Batch {batch_idx + 1}/{len(train_loader)} - Loss: {loss.item():.6f}, LR: {current_lr:.6f}")
 
         epoch_loss = sum(losses) / len(losses)
 
         scheduler.step(epoch_loss.item())
 
         list_epoch_loss.append(epoch_loss.item())
-        lm.logger.debug(f"Epoch {epoch + 1}/{num_epochs} completed. Loss: {epoch_loss:.6f}")
+        logger.debug(f"Epoch {epoch + 1}/{num_epochs} completed. Loss: {epoch_loss:.6f}")
         tqdm_epochs.set_description(f"Epoch Loss: {epoch_loss:.6f}, Training")
 
         # Validation
@@ -60,7 +60,7 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
                     val_losses.append(val_loss.item())
             avg_val_loss = sum(val_losses) / len(val_losses)
             list_val_loss.append(avg_val_loss)
-            lm.logger.debug(f"Validation Loss at epoch {epoch + 1}: {avg_val_loss:.6f}")
+            logger.debug(f"Validation Loss at epoch {epoch + 1}: {avg_val_loss:.6f}")
 
             # Save the model
             model.save_model(f"{dir}/saved_models/{title}_epoch{epoch + 1}.pt")
@@ -73,7 +73,7 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
     th = int(t1 // 3600)
     tm = int((t1 % 3600) // 60)
     ts = int(t1 % 60)
-    lm.logger.info(f"Training completed in {th}h {tm}m {ts}s")
+    logger.info(f"Training completed in {th}h {tm}m {ts}s")
     return list_epoch_loss, list_val_loss, model
 
 # end of file

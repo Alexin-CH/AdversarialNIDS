@@ -87,6 +87,7 @@ model_mlp, train_losses_mlp, val_losses_mlp = train(
     title=f"{title}_{mlp_title}",
     dir=root_dir,
     device=device,
+    logger=logger
 )
 
 display_loss(
