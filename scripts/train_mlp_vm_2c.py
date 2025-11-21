@@ -73,7 +73,7 @@ logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 learning_rate_mlp = 1e-2
 num_epochs_mlp = 1000
 
-mlp_title = f"MLP_{model_type}_{num_epochs_mlp}"
+mlp_title = f"MLP_2c_{model_type}_{num_epochs_mlp}"
 
 optimizer_mlp = optim.AdamW(model_mlp.parameters(), lr=learning_rate_mlp)
 scheduler_mlp = optim.lr_scheduler.ReduceLROnPlateau(optimizer_mlp, mode='min', factor=0.9, patience=50, min_lr=1e-8)
