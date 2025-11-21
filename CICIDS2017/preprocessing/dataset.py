@@ -33,23 +33,49 @@ class CICIDS2017:
         """ Encode the dataset using data_encoding function. """
         self.logger.info("Encoding attack labels...")
         encoded = data_encoding(self.data, attack_encoder=attack_encoder, logger=self.logger)
-        self.data, self.is_attack, self.attack_classes = encoded
+        self.features, self.is_attack, self.attack_classes = encoded
         return self
-
 
     def scale(self, scaler="standard"):
         """ Scale the dataset features using the provided scaler. """
         self.logger.info("Scaling dataset features...")
-        self.scaled_features = scale(self.data, scaler=scaler, logger=self.logger)
+        self.features = scale(self.features, scaler=scaler, logger=self.logger)
         return self
-        
+
+    def subset(self, size=None, multi_class=False):
+        """ Undersample the dataset to the specified size. """
+        self.logger.info(f"Subsetting dataset to size: {size}...")
+        self.multi_class = multi_class
+
+        if self.multi_class:
+            data = self.attack_classes
+        else:
+            data = self.is_attack
+
+        indices = subset_indices(
+            data=data,
+            size=size,
+            logger=self.logger
+        )
+        self.features = self.features.iloc[indices].reset_index(drop=True)
+        self.is_attack = self.is_attack.iloc[indices].reset_index(drop=True)
+        self.attack_classes = self.attack_classes.iloc[indices].reset_index(drop=True)
+        return self, self.multi_class
+
     def split(self, test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False):
         """ Split the dataset into training and testing sets. """
         self.logger.info("Splitting dataset into training and testing sets...")
 
+        X = self.features.values.astype(float)
+
+        if self.multi_class:
+            y = self.attack_classes.values.astype(float)
+        else:
+            y = self.is_attack.values.astype(float)
+
         data_split = split_data(
-            X=self.scaled_features,
-            y=self.attack_classes if self.multi_class else self.is_attack,
+            X=X,
+            y=y,
             test_size=test_size,
             to_tensor=to_tensor,
             apply_smote=apply_smote,
@@ -57,26 +83,11 @@ class CICIDS2017:
             logger=self.logger
         )
         return data_split
-
-    def subset(self, size=None, multi_class=False):
-        """ Undersample the dataset to the specified size. """
-        self.logger.info(f"Subsetting dataset to size: {size}...")
-        self.multi_class = multi_class
-
-        indices = subset_indices(
-            self.attack_classes if self.multi_class else self.is_attack,
-            size=size,
-            logger=self.logger
-        )
-        self.data = self.data.iloc[indices].reset_index(drop=True)
-        self.scaled_features = self.scaled_features[indices]
-        self.is_attack = self.is_attack[indices]
-        self.attack_classes = self.attack_classes[indices]
-        return self, self.multi_class
         
     def distribution(self, data):
         """ Display the distribution of attack classes in the dataset. """
         self.logger.info("Calculating data distribution...")
+
         distribution = data_distribution(
             data,
             logger=self.logger

@@ -42,8 +42,10 @@ def data_encoding(data, attack_encoder="label", logger=SimpleLogger()):
             for attack_type, count in data['Attack Type'].value_counts().items():
                 logger.debug(f"  {attack_type}: {count}")
 
-        logger.info(f"Attack labels encoded using {encoder} encoder.")        
-        return data, is_attack, attack_classes
+        logger.info(f"Attack labels encoded using {encoder} encoder.")
+        data.drop('Attack Type', axis=1, inplace=True)
+
+        return data, pd.Series(is_attack), pd.Series(attack_classes)
 
     except KeyError as e:
         if logger:

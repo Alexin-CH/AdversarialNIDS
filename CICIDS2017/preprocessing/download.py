@@ -165,7 +165,6 @@ def download_prepare(logger=SimpleLogger()):
         logger.error(f"Error during preprocessing: {e}")
         raise
 
-
 def data_distribution(data, logger=SimpleLogger()):
     """ Display the distribution of data by attack type. """
     try:

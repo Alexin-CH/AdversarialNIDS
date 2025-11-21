@@ -2,12 +2,7 @@ MachineLearningCVE/
 Dataset/
 *.csv
 
-logs/
-*.log
-
-loss_img/
-reports_img/
-saved_models/
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
