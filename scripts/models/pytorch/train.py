@@ -1,43 +1,79 @@
+import time
 import torch
 from tqdm import tqdm
 
-def train(model, optimizer, scheduler, criterion, train_loader, val_loader, device, epochs=25):
-    epoch_losses = []
-    epoch_val_losses = []
-    # Training loop
-    tqdm_epochs = tqdm(range(int(epochs)), desc="Training Progress")
+def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_loader, title, dir, device, logger):
+    list_epoch_loss = []
+    list_val_loss = []
+    count = len(str(int(num_epochs-1)))
+    lm.logger.info("Starting model training...")
+    lm.logger.info(f"Number of epochs: {num_epochs}")
+
+    t0 = time.time()
+    model.train()
+    tqdm_epochs = tqdm(range(int(num_epochs)), desc="Training")
     for epoch in tqdm_epochs:
-        model.train()
+        lm.logger.debug(f"Epoch {epoch + 1}/{num_epochs} started.")
         losses = []
-        for X_train, y_train in train_loader:
+
+        show_progress = True if epoch % max(num_epochs // 10, 1) == 0 else False
+        tqdm_batchs = tqdm(train_loader, desc="Processing batches", leave=show_progress)
+        for batch_idx, batch in enumerate(tqdm_batchs):
+            X_train, y_train = batch
+
             # Forward pass
             outputs = model(X_train)
             loss = criterion(outputs, y_train)
+
             losses.append(loss)
+            loss.backward()
+
+            optimizer.step()
+
+            counter = str(epoch)
+            zeros = count - len(counter)
+            counter = '0' * zeros + counter
+            current_lr = scheduler.get_last_lr()[0]
+            tqdm_batchs.set_description(f"[{counter}] Batch Loss: {loss:.6f}, LR: {current_lr:.6f}, Processing")
+            lm.logger.debug(f"Batch {batch_idx + 1}/{len(train_loader)} - Loss: {loss.item():.6f}, LR: {current_lr:.6f}")
 
         epoch_loss = sum(losses) / len(losses)
-        epoch_losses.append(epoch_loss.cpu().detach().numpy())
-            
-        # Backward pass and optimization
-        optimizer.zero_grad()
-        epoch_loss.backward()
-        optimizer.step()
 
         scheduler.step(epoch_loss.item())
-        
+
+        list_epoch_loss.append(epoch_loss.item())
+        lm.logger.debug(f"Epoch {epoch + 1}/{num_epochs} completed. Loss: {epoch_loss:.6f}")
+        tqdm_epochs.set_description(f"Epoch Loss: {epoch_loss:.6f}, Training")
+
         # Validation
-        model.eval()
-        with torch.no_grad():
+        if (epoch) % 2 == 0:
+            model.eval()
             val_losses = []
-            for X_val, y_val in val_loader:
-                X_val, y_val = X_val.to(device), y_val.to(device)
-                val_outputs = model(X_val)
-                val_loss = criterion(val_outputs, y_val)
-                val_losses.append(val_loss)
+            with torch.no_grad():
+                tqdm_val = tqdm(val_loader, desc="Processing validation batches", leave=False)
+                for val_batch in tqdm_val:
+                    X_val, y_val = val_batch
 
-            epoch_val_loss = sum(val_losses) / len(val_losses)
-            epoch_val_losses.append(epoch_val_loss.cpu().detach().numpy())
-            
-        tqdm_epochs.set_description(f"Loss: {epoch_loss.item():.4f}, Val Loss: {epoch_val_loss.item():.4f}, LR: {scheduler.get_last_lr()[0]:.6f}")
+                    val_outputs = model(X_val)
+                    val_loss = criterion(val_outputs, y_val)
 
-    return model, epoch_losses, epoch_val_losses
+                    val_losses.append(val_loss.item())
+            avg_val_loss = sum(val_losses) / len(val_losses)
+            list_val_loss.append(avg_val_loss)
+            lm.logger.debug(f"Validation Loss at epoch {epoch + 1}: {avg_val_loss:.6f}")
+
+            # Save the model
+            model.save_model(f"{dir}/saved_models/{title}_epoch{epoch + 1}.pt")
+
+            model.train()
+        else:
+            list_val_loss.append(avg_val_loss)
+
+    t1 = time.time() - t0
+    th = int(t1 // 3600)
+    tm = int((t1 % 3600) // 60)
+    ts = int(t1 % 60)
+    lm.logger.info(f"Training completed in {th}h {tm}m {ts}s")
+    return list_epoch_loss, list_val_loss, model
+
+# end of file
