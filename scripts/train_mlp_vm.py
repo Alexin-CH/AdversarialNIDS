@@ -69,7 +69,7 @@ model_mlp = NetworkIntrusionMLP(input_size=input_size, num_classes=num_classes).
 logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 
 learning_rate_mlp = 1e-2
-num_epochs_mlp = 50*1000
+num_epochs_mlp = 5*1000
 
 mlp_title = f"MLP_{model_type}_{num_epochs_mlp}"
 
