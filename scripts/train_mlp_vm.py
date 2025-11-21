@@ -40,7 +40,7 @@ full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
     logger=logger
 ).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
 
-dataset, multiclass = full_dataset.subset(size=125*1000, multi_class=True)
+dataset, multiclass = full_dataset.subset(size=100*1000, multi_class=True)
 
 X_train, X_val, y_train, y_val = dataset.split(
     one_hot=True,
