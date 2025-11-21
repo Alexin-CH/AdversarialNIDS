@@ -74,6 +74,6 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
     tm = int((t1 % 3600) // 60)
     ts = int(t1 % 60)
     logger.info(f"Training completed in {th}h {tm}m {ts}s")
-    return list_epoch_loss, list_val_loss, model
+    return model, list_epoch_loss, list_val_loss
 
 # end of file
