@@ -48,6 +48,8 @@ X_train, X_val, y_train, y_val = dataset.split(
     to_tensor=True
 )
 
+del full_dataset, dataset  # Free up memory
+
 # Create DataLoaders
 train_dataset = TensorDataset(X_train.to(device), y_train.to(device))
 val_dataset = TensorDataset(X_val.to(device), y_val.to(device))
