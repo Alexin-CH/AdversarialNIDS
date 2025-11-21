@@ -40,7 +40,7 @@ full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
     logger=logger
 ).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
 
-dataset, multiclass = full_dataset.subset(size=200*1000, multi_class=True)
+dataset, multiclass = full_dataset.subset(size=125*1000, multi_class=True)
 
 X_train, X_val, y_train, y_val = dataset.split(
     one_hot=True,
@@ -69,7 +69,7 @@ model_mlp = NetworkIntrusionMLP(input_size=input_size, num_classes=num_classes).
 logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 
 learning_rate_mlp = 1e-2
-num_epochs_mlp = 1e6
+num_epochs_mlp = 50*1000
 
 mlp_title = f"MLP_{model_type}_{num_epochs_mlp}"
 
@@ -81,13 +81,13 @@ model_mlp, train_losses_mlp, val_losses_mlp = train(
     optimizer=optimizer_mlp,
     scheduler=scheduler_mlp,
     criterion=criterion,
+    epochs=num_epochs_mlp,
     train_loader=train_loader,
     val_loader=val_loader,
+    title=f"{title}_{mlp_title}",
+    dir=root_dir,
     device=device,
-    epochs=num_epochs_mlp
 )
-
-model_mlp.save_model(f"{root_dir}/saved_models/{mlp_title}.pt")
 
 display_loss(
     list_epoch_loss=train_losses_mlp,
