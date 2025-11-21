@@ -27,8 +27,8 @@ def display_loss(list_epoch_loss, list_val_loss, title, dir, logger, plot=True, 
     plt.legend()
 
     # Save the plot
-    loss_plot_path = f"{dir}/loss_img/{title}_loss.png"
-    os.makedirs(f"{dir}/loss_img", exist_ok=True)
+    os.makedirs(dir, exist_ok=True)
+    loss_plot_path = f"{dir}/{title}_loss.png"
     plt.savefig(loss_plot_path, bbox_inches='tight', dpi=300)
     logger.info(f"Loss curve saved as {loss_plot_path}")
 

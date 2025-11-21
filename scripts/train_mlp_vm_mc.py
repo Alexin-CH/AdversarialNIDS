@@ -29,7 +29,10 @@ from scripts.models.pytorch.visualization import display_loss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-lm = LoggerManager(log_dir=f"{root_dir}/logs", log_name="TDM")
+lm = LoggerManager(
+    log_dir=f"{root_dir}/results/logs",
+    log_name="TDM"
+)
 logger = lm.get_logger()
 title = lm.get_title()
 logger.info(f"Logger initialized for '{title}'")
