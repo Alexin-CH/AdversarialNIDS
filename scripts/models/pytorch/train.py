@@ -13,7 +13,7 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
     model.train()
     tqdm_epochs = tqdm(range(int(num_epochs)), desc="Training")
     for epoch in tqdm_epochs:
-        logger.debug(f"Epoch {epoch + 1}/{num_epochs} started.")
+        # logger.debug(f"Epoch {epoch + 1}/{num_epochs} started.")
         losses = []
 
         show_progress = True if epoch % max(num_epochs // 10, 1) == 0 else False
@@ -35,7 +35,7 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
             counter = '0' * zeros + counter
             current_lr = scheduler.get_last_lr()[0]
             tqdm_batchs.set_description(f"[{counter}] Batch Loss: {loss:.6f}, LR: {current_lr:.6f}, Processing")
-            logger.debug(f"Batch {batch_idx + 1}/{len(train_loader)} - Loss: {loss.item():.6f}, LR: {current_lr:.6f}")
+            # logger.debug(f"Batch {batch_idx + 1}/{len(train_loader)} - Loss: {loss.item():.6f}, LR: {current_lr:.6f}")
 
         epoch_loss = sum(losses) / len(losses)
 
@@ -46,7 +46,7 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
         tqdm_epochs.set_description(f"Epoch Loss: {epoch_loss:.6f}, Training")
 
         # Validation
-        if (epoch) % 2 == 0:
+        if (epoch) % 100 == 0:
             model.eval()
             val_losses = []
             with torch.no_grad():
