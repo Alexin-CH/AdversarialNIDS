@@ -71,7 +71,7 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
     attack_success_rate = (y_pred_adversarial == 0).mean()  # Success = predicted as benign
     
 
-    perturbation = np.linalg.norm(X_adv - X_attacks, axis=1).mean() #Mean perturbation (L2 norm)
+    perturbation = np.linalg.norm(X_adv - X_attacks, axis=1).mean() # Mean perturbation (L2 norm)
     
     logger.info("=== Attack Results ===")
     logger.info(f"Original accuracy on attack samples: {original_acc:.3f}")
