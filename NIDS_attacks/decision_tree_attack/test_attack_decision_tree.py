@@ -10,13 +10,12 @@ import numpy as np
 
 from CICIDS2017.preprocessing.dataset import CICIDS2017
 from UNSWNB15.preprocessing.dataset import UNSWNB15
+
 from scripts.models.decision_tree.decision_tree import train_decision_tree
 from scripts.logger import LoggerManager
 
 from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier
-
-
 
 def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visualization=False):
 
@@ -26,12 +25,12 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
     
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
-        ds = CICIDS2017(logger=logger).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
-        ds = ds.subset(size=10000, multi_class=True)
+        ds = CICIDS2017(logger=logger).optimize_memory().encode()
+        ds, multi_class = ds.subset(size=10000, multi_class=True)
     else:
         logger.info("Loading UNSWNB15 dataset...")
-        ds = UNSWNB15(dataset_size="small").optimize_memory().encode().scale().subset(size=100000, multi_class=False)
-        ds = ds.subset(size=10000, multi_class=True)
+        ds = UNSWNB15(dataset_size="small").optimize_memory().encode()
+        ds, multi_class = ds.subset(size=10000, multi_class=True)
 
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
