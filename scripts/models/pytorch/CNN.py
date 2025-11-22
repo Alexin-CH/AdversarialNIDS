@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 
@@ -8,22 +9,22 @@ class NetworkIntrustionCNN(nn.Module):
         self.activation = nn.Mish()
         
         self.features = nn.Sequential(
-            nn.Conv1d(in_channels=input_channels, out_channels=64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm1d(64),
+            nn.Conv1d(input_channels, 64//2, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(64//2),
             self.activation,
             nn.MaxPool1d(kernel_size=2),
             
-            nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm1d(128),
+            nn.Conv1d(64//2, 128//2, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(128//2),
             self.activation,
             nn.MaxPool1d(kernel_size=2)
         )
         
         self.classifier = nn.Sequential(
-            nn.Linear(128 *  (input_size // 4), 32),
+            nn.Linear(128//2 *  (input_size // 4), 32//2),
             self.activation,
             nn.Dropout(0.1),
-            nn.Linear(32, num_classes)
+            nn.Linear(32//2, num_classes)
         )
     
     def forward(self, x):
@@ -36,4 +37,13 @@ class NetworkIntrustionCNN(nn.Module):
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+    
+    def save_model(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(self.state_dict(), path)
+
+    def load_model(self, path, device='cpu'):
+        self.load_state_dict(torch.load(path, map_location=device))
+        self.to(device)
+        return self
     

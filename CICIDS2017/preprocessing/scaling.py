@@ -1,5 +1,6 @@
 import os
 import sys
+import pandas as pd
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
@@ -18,8 +19,7 @@ def scale(data, scaler="standard", logger=SimpleLogger()):
         raise ValueError(f"Scaler '{scaler}' is not recognized.")
 
     scaler = available_scalers[scaler]
-    features = data.drop(columns=['Attack Type'])
-    scaled_features = scaler.fit_transform(features)
+    scaled_features = scaler.fit_transform(data)
 
     logger.info(f"Features scaled using {scaler} scaler.")
-    return scaled_features
+    return pd.DataFrame(scaled_features, columns=data.columns)

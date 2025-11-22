@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 
@@ -8,22 +9,22 @@ class NetworkIntrusionMLP(nn.Module):
         self.activation = nn.Mish()
 
         self.features = nn.Sequential(
-            nn.Linear(input_size, 128),
-            nn.BatchNorm1d(128),
+            nn.Linear(input_size, 256//2),
+            nn.BatchNorm1d(256//2),
             self.activation,
-            nn.Linear(128, 64),
-            nn.BatchNorm1d(64),
+            nn.Linear(256//2, 128//2),
+            nn.BatchNorm1d(128//2),
             self.activation,
-            nn.Linear(64, 32),
-            nn.BatchNorm1d(32),
+            nn.Linear(128//2, 64//2),
+            nn.BatchNorm1d(64//2),
             self.activation
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(32, 16),
+            nn.Linear(64//2, 32//2),
             self.activation,
             nn.Dropout(0.1),
-            nn.Linear(16, num_classes),
+            nn.Linear(32//2, num_classes),
         )
 
     def forward(self, x):
@@ -33,4 +34,13 @@ class NetworkIntrusionMLP(nn.Module):
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+    
+    def save_model(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(self.state_dict(), path)
+
+    def load_model(self, path, device='cpu'):
+        self.load_state_dict(torch.load(path, map_location=device))
+        self.to(device)
+        return self
     
