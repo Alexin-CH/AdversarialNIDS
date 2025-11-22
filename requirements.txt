@@ -29,7 +29,3 @@ torch
 
 # Adversarial Robustness Framework
 adversarial-robustness-toolbox
-
-# Deep Learning Frameworks (Required for Surrogate Model and ART dependencies)
-torch
-tensorflow

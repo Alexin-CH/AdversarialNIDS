@@ -85,10 +85,9 @@ def perform_model_analysis(model, X_test, y_test, dir, logger, model_name="Model
 
     if save_fig:
         # Save figure to dir
-        fig_path = os.path.join(dir, 'reports_img')
-        os.makedirs(fig_path, exist_ok=True)
+        os.makedirs(dir, exist_ok=True)
         filename = f"{model_name.replace(' ', '_')}_model_analysis.png"
-        fig.savefig(os.path.join(fig_path, filename))
+        fig.savefig(os.path.join(dir, filename))
     
     if plot:
         plt.show()

@@ -3,8 +3,8 @@ import sys
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
 
 from scripts.logger import SimpleLogger
 
@@ -43,13 +43,10 @@ def data_encoding(data, categorical_cols, attack_encoder="label", logger=SimpleL
             is_attack = encoder.fit_transform((data["Attack Type"] != "Benign").values.ravel())
             attack_classes = encoder.fit_transform(data["Attack Type"].values.ravel())
 
-        if logger:
-            logger.debug("Data Labels after encoding:")
-            for attack_type, count in data["Attack Type"].value_counts().items():
-                logger.debug(f"  {attack_type}: {count}")
-
-        logger.info(f"Attack labels encoded using {encoder} encoder.")        
-        return data, is_attack, attack_classes
+        logger.info(f"Attack labels encoded using {encoder} encoder.")
+        data.drop('Attack Type', axis=1, inplace=True)
+        
+        return data, pd.Series(is_attack), pd.Series(attack_classes)
 
     except KeyError as e:
         if logger:
