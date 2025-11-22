@@ -15,13 +15,18 @@ from UNSWNB15.preprocessing.encoding import data_encoding
 from UNSWNB15.preprocessing.scaling import scale
 from UNSWNB15.preprocessing.spliting import split_data
 from UNSWNB15.preprocessing.subset import subset_indices
-from UNSWNB15.preprocessing.download import data_distribution
+
+from UNSWNB15.analysis.distribution import data_distribution
+from UNSWNB15.analysis.mutual_info import mutual_info_classif
+from UNSWNB15.analysis.pca import apply_pca
 
 class UNSWNB15():
     def __init__(self, dataset_size="small", logger=SimpleLogger()):
         """ Initialize the UNSWNB15 dataset class by downloading and preparing the dataset. """
         self.logger = logger
         self.data = download_prepare(logger=self.logger, dataset_size=dataset_size)
+        self.multi_class = True
+
         self.categorical_cols = ["proto", "state", "service", "sport", "Destination Port"]
         for col in self.categorical_cols:
             self.data[col] = self.data[col].astype(str) # For Label Encoding compatibility
@@ -90,12 +95,49 @@ class UNSWNB15():
         )
         return data_split
         
-    def distribution(self, data):
+    def distribution(self):
         """ Display the distribution of attack classes in the dataset. """
         self.logger.info("Calculating data distribution...")
 
+        if self.multi_class:
+            data = self.attack_classes
+        else:
+            data = self.is_attack
+
         distribution = data_distribution(
-            data,
+            data=data,
             logger=self.logger
         )
         return distribution
+
+    def mutual_info(self):
+        """ Calculate mutual information for feature selection. """
+        self.logger.info("Calculating mutual information for feature selection...")
+
+        X = self.features.values.astype(float)
+
+        if self.multi_class:
+            y = self.attack_classes.values.astype(float)
+        else:
+            y = self.is_attack.values.astype(float)
+
+        mi = mutual_info_classif(
+            X=X,
+            y=y,
+            logger=self.logger
+        )
+        return mi
+
+    def pca(self, n_components=2):
+        """ Apply PCA to reduce dimensionality of the dataset. """
+        self.logger.info(f"Applying PCA with {n_components} components...")
+
+        data = self.features.values.astype(float)
+
+        principal_components, explained_variance_ratio = apply_pca(
+            data=data,
+            n_components=n_components
+        )
+        self.logger.info(f"Explained variance ratio: {explained_variance_ratio.sum():.4f}")
+        return principal_components, explained_variance_ratio
+    
