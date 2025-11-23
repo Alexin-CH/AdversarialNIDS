@@ -36,7 +36,7 @@ def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 100
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
     logger.info("Training Random Forest...")
-    model, cv_scores = train_random_forest(X_train, y_train, n_estimators=50, max_depth=10, cv_test=False, logger=logger)
+    model, cv_scores = train_random_forest(X_train, y_train, n_estimators=10, max_depth=10, cv_test=False, logger=logger)
     
     initial_acc = model.score(X_test, y_test)
     logger.info(f"Initial accuracy: {initial_acc:.3f}")
@@ -95,4 +95,4 @@ def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 100
 
 
 if __name__ == "__main__":
-    results = rf_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
+    results = rf_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=15000, per_sample_visualization=True)
