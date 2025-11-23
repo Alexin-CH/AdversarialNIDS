@@ -1,16 +1,54 @@
-## UNSW-NB15 Overview
+# Dataset UNSWNB15 - Documentation
 
-UNSW-NB15 is a contemporary dataset created as part of the UNSW Cyber Security Research Centre. It is designed for evaluating intrusion detection systems and network security. The dataset contains a diverse range of network traffic and attack scenarios.
+## Modules
 
-### Key Features:
-- **Variety of Attacks**: Includes **nine** different classes of attacks such as DoS, backdoors, worms, and more.
-- **Large Volume**: Comprises over **2.5 million** records, allowing for extensive testing and validation.
-- **Detailed Record Structure**: Each record contains **49** attributes, providing in-depth information for analysis.
-- **Synthetic Generation**: Data generated using a hybrid approach combining real and synthetic traffic to mimic real-world usage.
+Les fonctions relatives au prépraitement du dataset UNSWNB15 sont organisées dans le sous-répertoire `preprocessing/`. 
 
-### Applications:
-- Development and testing of intrusion detection systems
-- Machine learning and AI-based security research
-- Network performance evaluation under attack conditions
+Les fonctions relatives aux analyses exploratoires et visualisations sont organisées dans le sous-répertoire `analysis/`.
 
-The UNSW-NB15 dataset is an essential tool for advancing research in cybersecurity and enhancing the effectiveness of IDS solutions.
+### 1. `dataset.py` - Classe principale
+
+#### Classe `UNSWNB15`
+
+Classe principale qui encapsule l'ensemble du workflow de prétraitement.
+
+**Constructeur :**
+```python
+UNSWNB15(dataset_size=None, logger=SimpleLogger())
+```
+- Initialise le dataset en téléchargeant et préparant les données
+- `dataset_size` : Taille du dataset (`full` pour concatener les 4 CSV ou `small` pour n'utiliser que le premier)
+- `logger` : Instance de logger pour le suivi des opérations
+
+**Méthodes :**
+
+- **`optimize_memory()`** : Optimise l'utilisation de la mémoire du dataset
+  - Retourne : `self` (chaînage de méthodes)
+
+- **`encode(attack_encoder="label")`** : Encode les labels d'attaque
+  - `attack_encoder` : Type d'encodeur ("label" ou "onehot")
+  - Retourne : `self` (chaînage de méthodes)
+  - Crée les attributs : `self.is_attack`, `self.attack_classes`
+
+- **`scale(scaler="standard")`** : Normalise les features du dataset
+  - `scaler` : Type de normalisation ("standard" ou "minmax")
+  - Retourne : `self` (chaînage de méthodes)
+  - Crée l'attribut : `self.scaled_features`
+
+- **`subset(size=None, multi_class=False)`** : Sous-échantillonne le dataset
+  - `size` : Taille cible du dataset
+  - `multi_class` : Si True, utilise les classes d'attaque ; sinon binaire (attaque/bénin)
+  - Retourne : `self` (chaînage de méthodes)
+
+- **`split(test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False)`** : Divise en ensembles train/test
+  - `test_size` : Proportion des données de test (défaut: 0.2)
+  - `to_tensor` : Convertit en tenseurs PyTorch si True
+  - `one_hot` : Applique l'encodage one-hot aux labels si True
+  - `apply_smote` : Applique SMOTE pour équilibrer les classes si True
+  - Retourne : `(X_train, X_test, y_train, y_test)`
+
+**Exemple d'utilisation :**
+```python
+dataset = UNSWNB15(dataset_size="small").optimize_memory().encode().scale().subset(size=100000, multi_class=False)
+X_train, X_test, y_train, y_test = dataset.split(test_size=0.2, apply_smote=True)
+```
