@@ -31,7 +31,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 lm = LoggerManager(
     log_dir=f"{root_dir}/results/logs",
-    log_name="TDM"
+    log_name="TrainMLP2C"
 )
 logger = lm.get_logger()
 title = lm.get_title()
@@ -41,7 +41,7 @@ logger.info(f"Using device: {device}")
 full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
     dataset_size="small",
     logger=logger
-).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
+).optimize_memory().encode(attack_encoder="label")
 
 dataset, multiclass = full_dataset.subset(size=400*1000, multi_class=False)
 
@@ -70,13 +70,21 @@ model_type = f"{input_size}x{num_classes}"
 
 criterion = nn.CrossEntropyLoss()
 
-model_mlp = NetworkIntrusionMLP(input_size=input_size, num_classes=num_classes).to(device)
+model_mlp = NetworkIntrusionMLP(
+    input_size=input_size,
+    num_classes=num_classes,
+    scaling_method='minmax'    
+)
+
 logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
+
+# Fitting and training MLP
+model_mlp = model_mlp.fit_scalers(X_train=X_train).to(device)
 
 learning_rate_mlp = 1e-2
 num_epochs_mlp = 5000
 
-mlp_title = f"MLP_2c_{model_type}_{num_epochs_mlp}"
+mlp_title = f"MLPS_2c_{model_type}_{num_epochs_mlp}"
 
 optimizer_mlp = optim.AdamW(model_mlp.parameters(), lr=learning_rate_mlp)
 scheduler_mlp = optim.lr_scheduler.ReduceLROnPlateau(optimizer_mlp, mode='min', factor=0.9, patience=50, min_lr=1e-8)
