@@ -19,6 +19,7 @@ from UNSWNB15.preprocessing.subset import subset_indices
 from UNSWNB15.analysis.distribution import data_distribution
 from UNSWNB15.analysis.mutual_info import mutual_info_classif
 from UNSWNB15.analysis.pca import apply_pca
+from UNSWNB15.analysis.first_level_features import first_level_features
 
 class UNSWNB15():
     def __init__(self, dataset_size="small", logger=SimpleLogger()):
@@ -127,52 +128,6 @@ class UNSWNB15():
             logger=self.logger
         )
         return mi
-    def first_level_features(self): 
-        first_level = [
-            "srcip",
-            "sport",
-            "dstip",
-            "dsport",
-            "proto",
-            "service",
-
-            "dur",
-
-            "spkts",
-            "dpkts",
-            "sbytes",
-            "dbytes",
-
-            "sttl",
-            "dttl",
-
-            "swin",
-            "dwin",
-
-            "state",
-
-            "synack",
-            "ackdat",
-            "tcprtt",
-
-            "sloss",
-            "dloss",
-
-            "trans_depth",
-            "res_bdy_len",
-            "ct_ftp_cmd",
-            "ct_flw_http_mthd",
-
-            "ct_srv_src",
-            "ct_srv_dst",
-            "ct_dst_ltm",
-            "ct_src_ltm",
-            "ct_src_dport_ltm",
-            "ct_dst_sport_ltm",
-        ]
-        return first_level
-        
-
 
     def pca(self, n_components=2):
         """ Apply PCA to reduce dimensionality of the dataset. """
@@ -186,4 +141,8 @@ class UNSWNB15():
         )
         self.logger.info(f"Explained variance ratio: {explained_variance_ratio.sum():.4f}")
         return principal_components, explained_variance_ratio
+    
+    def first_level_features(self):
+        """ Get the list of first-level features for UNSWNB15 dataset. """
+        return first_level_features()
     

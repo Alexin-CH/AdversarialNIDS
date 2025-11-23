@@ -20,3 +20,48 @@ def compute_features_batch(X, dico,eps=1e-6):
     X[:, dico['Dintpkt']]             = dur / (dpkts - 1 + eps)
 
     return X
+
+def first_level_features(self): 
+    first_level = [
+        "srcip",
+        "sport",
+        "dstip",
+        "dsport",
+        "proto",
+        "service",
+
+        "dur",
+
+        "spkts",
+        "dpkts",
+        "sbytes",
+        "dbytes",
+
+        "sttl",
+        "dttl",
+
+        "swin",
+        "dwin",
+
+        "state",
+
+        "synack",
+        "ackdat",
+        "tcprtt",
+
+        "sloss",
+        "dloss",
+
+        "trans_depth",
+        "res_bdy_len",
+        "ct_ftp_cmd",
+        "ct_flw_http_mthd",
+
+        "ct_srv_src",
+        "ct_srv_dst",
+        "ct_dst_ltm",
+        "ct_src_ltm",
+        "ct_src_dport_ltm",
+        "ct_dst_sport_ltm",
+    ]
+    return first_level
