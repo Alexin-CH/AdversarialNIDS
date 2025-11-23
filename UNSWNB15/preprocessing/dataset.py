@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
+root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
+sys.path.append(root_dir)
 
 from scripts.logger import SimpleLogger
 
@@ -15,6 +15,7 @@ from UNSWNB15.preprocessing.encoding import data_encoding
 from UNSWNB15.preprocessing.scaling import scale
 from UNSWNB15.preprocessing.spliting import split_data
 from UNSWNB15.preprocessing.subset import subset_indices
+from UNSWNB15.preprocessing.download import data_distribution
 
 class UNSWNB15():
     def __init__(self, dataset_size="small", logger=SimpleLogger()):
@@ -35,58 +36,69 @@ class UNSWNB15():
         """ Encode the dataset using data_encoding function. """
         self.logger.info("Encoding attack labels...")
         encoded = data_encoding(self.data, self.categorical_cols, attack_encoder=attack_encoder, logger=self.logger)
-        self.data, self.is_attack, self.attack_classes = encoded
+        self.features, self.is_attack, self.attack_classes = encoded
 
         for col in self.categorical_cols:
-            self.data[col] = self.data[col].astype(float) # For Scaling compatibility
+            self.features[col] = self.features[col].astype(float) # For Scaling compatibility
         return self
 
     def scale(self, scaler="standard"):
         """ Scale the dataset features using the provided scaler. """
         self.logger.info("Scaling dataset features...")
-        self.scaled_features = scale(self.data, scaler=scaler, logger=self.logger)
+        self.features = scale(self.features, scaler=scaler, logger=self.logger)
         return self
-    
-    def split(self, test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False):
-        """ Split the dataset into training and testing sets. """
-        self.logger.info("Splitting dataset into training and testing sets...")
-
-        data_split = split_data(
-            X=self.scaled_features,
-            y=self.attack_classes if self.multi_class else self.is_attack,
-            test_size=test_size,
-            to_tensor=to_tensor,
-            one_hot=one_hot,
-            apply_smote=apply_smote,
-            logger=self.logger
-        )
-        return data_split
 
     def subset(self, size=None, multi_class=False):
         """ Undersample the dataset to the specified size. """
         self.logger.info(f"Subsetting dataset to size: {size}...")
         self.multi_class = multi_class
 
+        if self.multi_class:
+            data = self.attack_classes
+        else:
+            data = self.is_attack
+
         indices = subset_indices(
-            self.attack_classes if self.multi_class else self.is_attack,
+            data=data,
             size=size,
             logger=self.logger
         )
-        self.data = self.data.iloc[indices].reset_index(drop=True)
-        self.scaled_features = self.scaled_features[indices]
-        self.is_attack = self.is_attack[indices]
-        self.attack_classes = self.attack_classes[indices]
-        return self
-    def compute_feature(self,first_level_features):
-        """Compute the second level features according to the first level ones"""
-        self.data["smean"] = self.data["sbytes"]/self.data["spkts"]
-        self.data["dmean"] = self.data["dbytes"]/self.data["dpkts"]
-        self.data["sload"] = self.data["sbytes"]/self.data["dur"]
-        self.data["dload"] = self.data["dbytes"]/self.data["dur"]
-        self.data["rate"] = (self.data["sbytes"]+self.data["dbytes"])/self.data["dur"]
-        self.data["sintpkt"] = self.data["dur"]/(self.data["spkts"]-1)
-        self.data["dintpkt"] = self.data["dur"]/(self.data["dpkts"]-1)
-        return self
+        self.features = self.features.iloc[indices].reset_index(drop=True)
+        self.is_attack = self.is_attack.iloc[indices].reset_index(drop=True)
+        self.attack_classes = self.attack_classes.iloc[indices].reset_index(drop=True)
+        return self, self.multi_class
+
+    def split(self, test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False):
+        """ Split the dataset into training and testing sets. """
+        self.logger.info("Splitting dataset into training and testing sets...")
+
+        X = self.features.values.astype(float)
+
+        if self.multi_class:
+            y = self.attack_classes.values.astype(float)
+        else:
+            y = self.is_attack.values.astype(float)
+
+        data_split = split_data(
+            X=X,
+            y=y,
+            test_size=test_size,
+            to_tensor=to_tensor,
+            apply_smote=apply_smote,
+            one_hot=one_hot,
+            logger=self.logger
+        )
+        return data_split
+        
+    def distribution(self, data):
+        """ Display the distribution of attack classes in the dataset. """
+        self.logger.info("Calculating data distribution...")
+
+        distribution = data_distribution(
+            data,
+            logger=self.logger
+        )
+        return distribution
     def first_level_features(self): 
         first_level = [
             "srcip",
@@ -131,3 +143,4 @@ class UNSWNB15():
             "ct_dst_sport_ltm",
         ]
         return first_level
+        
