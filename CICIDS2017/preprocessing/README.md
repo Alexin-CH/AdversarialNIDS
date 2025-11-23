@@ -19,7 +19,7 @@ La classe principale `CICIDS2017` dans `dataset.py` orchestre l'ensemble de ce w
 
 ## Modules
 
-### 3. `download.py` - Téléchargement et préparation
+### 1. `download.py` - Téléchargement et préparation
 
 #### Fonction `download_prepare(logger=SimpleLogger())`
 
