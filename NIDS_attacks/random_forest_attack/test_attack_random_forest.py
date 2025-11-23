@@ -18,7 +18,7 @@ from art.estimators.classification import SklearnClassifier
 
 
 
-def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,per_sample_visualization=False):
+def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,per_sample_visualization=False):
 
     logger_mgr = LoggerManager(log_dir='logs', log_name='attack_test')
     logger = logger_mgr.get_logger()
@@ -95,4 +95,4 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size =
 
 
 if __name__ == "__main__":
-    results = simple_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
+    results = rf_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
