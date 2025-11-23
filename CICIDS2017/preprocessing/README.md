@@ -19,56 +19,7 @@ La classe principale `CICIDS2017` dans `dataset.py` orchestre l'ensemble de ce w
 
 ## Modules
 
-### 1. `dataset.py` - Classe principale
-
-#### Classe `CICIDS2017`
-
-Classe principale qui encapsule l'ensemble du workflow de prétraitement.
-
-**Constructeur :**
-```python
-CICIDS2017(dataset_size=None, logger=SimpleLogger())
-```
-- Initialise le dataset en téléchargeant et préparant les données
-- `dataset_size` : Taille du dataset (optionnel)
-- `logger` : Instance de logger pour le suivi des opérations
-
-**Méthodes :**
-
-- **`optimize_memory()`** : Optimise l'utilisation de la mémoire du dataset
-  - Retourne : `self` (chaînage de méthodes)
-
-- **`encode(attack_encoder="label")`** : Encode les labels d'attaque
-  - `attack_encoder` : Type d'encodeur ("label" ou "onehot")
-  - Retourne : `self` (chaînage de méthodes)
-  - Crée les attributs : `self.is_attack`, `self.attack_classes`
-
-- **`scale(scaler="standard")`** : Normalise les features du dataset
-  - `scaler` : Type de normalisation ("standard" ou "minmax")
-  - Retourne : `self` (chaînage de méthodes)
-  - Crée l'attribut : `self.scaled_features`
-
-- **`subset(size=None, multi_class=False)`** : Sous-échantillonne le dataset
-  - `size` : Taille cible du dataset
-  - `multi_class` : Si True, utilise les classes d'attaque ; sinon binaire (attaque/bénin)
-  - Retourne : `self` (chaînage de méthodes)
-
-- **`split(test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False)`** : Divise en ensembles train/test
-  - `test_size` : Proportion des données de test (défaut: 0.2)
-  - `to_tensor` : Convertit en tenseurs PyTorch si True
-  - `one_hot` : Applique l'encodage one-hot aux labels si True
-  - `apply_smote` : Applique SMOTE pour équilibrer les classes si True
-  - Retourne : `(X_train, X_test, y_train, y_test)`
-
-**Exemple d'utilisation :**
-```python
-dataset = CICIDS2017().optimize_memory().encode().scale().subset(size=100000, multi_class=False)
-X_train, X_test, y_train, y_test = dataset.split(test_size=0.2, apply_smote=True)
-```
-
----
-
-### 2. `download.py` - Téléchargement et préparation
+### 3. `download.py` - Téléchargement et préparation
 
 #### Fonction `download_prepare(logger=SimpleLogger())`
 
@@ -109,7 +60,7 @@ attack_map = {
 
 ---
 
-### 3. `memory_optimization.py` - Optimisation mémoire
+### 2. `memory_optimization.py` - Optimisation mémoire
 
 #### Fonction `optimize_memory_usage(data, logger=None)`
 
@@ -129,7 +80,7 @@ Réduit l'empreinte mémoire du DataFrame en convertissant les types numériques
 
 ---
 
-### 4. `encoding.py` - Encodage des labels
+### 3. `encoding.py` - Encodage des labels
 
 #### Fonction `data_encoding(data, attack_encoder="label", logger=SimpleLogger())`
 
@@ -151,7 +102,7 @@ Encode les labels d'attaque en valeurs numériques.
 
 ---
 
-### 5. `scaling.py` - Normalisation
+### 4. `scaling.py` - Normalisation
 
 #### Fonction `scale(data, scaler="standard", logger=SimpleLogger())`
 
@@ -170,7 +121,7 @@ Normalise les features numériques du dataset (excluant 'Attack Type').
 
 ---
 
-### 6. `subset.py` - Sous-échantillonnage
+### 5. `subset.py` - Sous-échantillonnage
 
 #### Fonction `subset_indices(data, size=None, logger=None)`
 
@@ -190,7 +141,7 @@ Effectue un sous-échantillonnage équilibré par classe.
 
 ---
 
-### 7. `spliting.py` - Division train/test
+### 6. `spliting.py` - Division train/test
 
 #### Fonction `split_data(X, y, test_size=0.2, to_tensor=False, apply_smote=False, one_hot=False, logger=None)`
 
@@ -214,19 +165,6 @@ Divise le dataset en ensembles d'entraînement et de test avec options avancées
 **Retourne :** Tuple `(X_train, X_test, y_train, y_test)`
 
 **Note sur SMOTE :** Utilise la stratégie 'not majority' pour sur-échantillonner uniquement les classes minoritaires.
-
----
-
-## Dépendances
-
-```python
-pandas
-numpy
-scikit-learn
-torch
-imblearn
-kagglehub
-```
 
 ---
 
