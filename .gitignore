@@ -2,6 +2,10 @@ MachineLearningCVE/
 Dataset/
 *.csv
 
+log/
+loss_img/
+reports_img/
+
 results/
 
 # Byte-compiled / optimized / DLL files
