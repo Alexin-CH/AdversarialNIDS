@@ -45,7 +45,7 @@ def download_prepare(logger=SimpleLogger(), dataset_size="full"):
         ]
 
         colums_to_drop = ['label', 'srcip', 'dstip']
-
+        # All of the features who do not depend of other features
         data_frames = []
         for name in name_csv:
             file_path = os.path.join(path, name)

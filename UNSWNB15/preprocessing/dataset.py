@@ -77,4 +77,57 @@ class UNSWNB15():
         self.is_attack = self.is_attack[indices]
         self.attack_classes = self.attack_classes[indices]
         return self
-        
+    def compute_feature(self,first_level_features):
+        """Compute the second level features according to the first level ones"""
+        self.data["smean"] = self.data["sbytes"]/self.data["spkts"]
+        self.data["dmean"] = self.data["dbytes"]/self.data["dpkts"]
+        self.data["sload"] = self.data["sbytes"]/self.data["dur"]
+        self.data["dload"] = self.data["dbytes"]/self.data["dur"]
+        self.data["rate"] = (self.data["sbytes"]+self.data["dbytes"])/self.data["dur"]
+        self.data["sintpkt"] = self.data["dur"]/(self.data["spkts"]-1)
+        self.data["dintpkt"] = self.data["dur"]/(self.data["dpkts"]-1)
+        return self
+    def first_level_features(self): 
+        first_level = [
+            "srcip",
+            "sport",
+            "dstip",
+            "dsport",
+            "proto",
+            "service",
+
+            "dur",
+
+            "spkts",
+            "dpkts",
+            "sbytes",
+            "dbytes",
+
+            "sttl",
+            "dttl",
+
+            "swin",
+            "dwin",
+
+            "state",
+
+            "synack",
+            "ackdat",
+            "tcprtt",
+
+            "sloss",
+            "dloss",
+
+            "trans_depth",
+            "res_bdy_len",
+            "ct_ftp_cmd",
+            "ct_flw_http_mthd",
+
+            "ct_srv_src",
+            "ct_srv_dst",
+            "ct_dst_ltm",
+            "ct_src_ltm",
+            "ct_src_dport_ltm",
+            "ct_dst_sport_ltm",
+        ]
+        return first_level
