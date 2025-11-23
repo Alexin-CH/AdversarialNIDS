@@ -41,7 +41,7 @@ Les scripts permettent de configurer plusieurs paramètres :
 - **Visualisation** : Affichage détaillé par échantillon
 
 ```python
-results = simple_hopskipjump_attack(
+results = [dt/rf]_hopskipjump_attack(
     dataset="CICIDS2017",
     ds_train_size = 10000,
     nb_samples=10,
