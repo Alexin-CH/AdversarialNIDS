@@ -16,7 +16,7 @@ def split_data(X, y, test_size=0.2, to_tensor=False, apply_smote=False, one_hot=
         for i in range(len(unique)):
             logger.info(f"  Class {unique[i]}: {counts[i]} samples")
 
-    if apply_smote:
+    if apply_smote and not min(counts) / max(counts) >= 0.9: # Apply SMOTE only if classes are imbalanced
         smote = SMOTE(sampling_strategy='not majority')
         X_train, y_train = smote.fit_resample(X_train, y_train)
         if logger:
