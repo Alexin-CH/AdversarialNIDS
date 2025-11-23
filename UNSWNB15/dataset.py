@@ -19,7 +19,7 @@ from UNSWNB15.preprocessing.subset import subset_indices
 from UNSWNB15.analysis.distribution import data_distribution
 from UNSWNB15.analysis.mutual_info import mutual_info_classif
 from UNSWNB15.analysis.pca import apply_pca
-from UNSWNB15.analysis.first_level_features import first_level_features
+from UNSWNB15.analysis.features import first_level_features
 
 class UNSWNB15():
     def __init__(self, dataset_size="small", logger=SimpleLogger()):
