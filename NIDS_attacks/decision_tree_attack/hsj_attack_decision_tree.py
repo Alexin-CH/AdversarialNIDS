@@ -27,12 +27,13 @@ def dt_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,ds_train_size = 100
     
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
-        ds = CICIDS2017(logger=logger).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
+        ds = CICIDS2017(logger=logger).optimize_memory().encode()
         ds = ds.subset(size=ds_train_size, multi_class=True)
     else:
         logger.info("Loading UNSWNB15 dataset...")
-        ds = UNSWNB15(dataset_size="small").optimize_memory().encode().scale()
+        ds = UNSWNB15(dataset_size="small", logger=logger).optimize_memory().encode()
         ds = ds.subset(size=ds_train_size, multi_class=True)
+        
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
     logger.info("Training Decision Tree...")
@@ -94,4 +95,4 @@ def dt_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,ds_train_size = 100
 
 
 if __name__ == "__main__":
-    results = dt_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
+    results = dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
