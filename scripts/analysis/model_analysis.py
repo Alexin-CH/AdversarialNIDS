@@ -16,8 +16,10 @@ sys.path.append(root_dir)
 from scripts.analysis.pytorch_prediction import get_pytorch_predictions
 from scripts.analysis.classification_report import plot_classification_report
 
+from scripts.logger import SimpleLogger
 
-def perform_model_analysis(model, X_test, y_test, dir, logger, model_name="Model", 
+
+def perform_model_analysis(model, X_test, y_test, dir=root_dir, logger=SimpleLogger(), model_name="Model", 
                           class_names=None, plot=True, save_fig=True, device=None):
     """
     Perform complete classification analysis with confusion matrix and report visualization.
