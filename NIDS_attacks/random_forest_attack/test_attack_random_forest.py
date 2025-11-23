@@ -1,4 +1,4 @@
-"""Test HopSkipJump attack on Decision Tree classifier for NIDS datasets."""
+"""Test HopSkipJump attack on Random Forest classifier for NIDS datasets."""
 
 import sys
 import os
@@ -10,7 +10,7 @@ import numpy as np
 
 from CICIDS2017.preprocessing.dataset import CICIDS2017
 from UNSWNB15.preprocessing.dataset import UNSWNB15
-from scripts.models.decision_tree.decision_tree import train_decision_tree
+from scripts.models.random_forest.random_forest import train_random_forest
 from scripts.logger import LoggerManager
 
 from art.attacks.evasion import HopSkipJump
@@ -22,7 +22,7 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
 
     logger_mgr = LoggerManager(log_dir='logs', log_name='attack_test')
     logger = logger_mgr.get_logger()
-    logger.info("Starting HopSkipJump attack on Decision Tree")
+    logger.info("Starting HopSkipJump attack on Random Forest")
     
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
@@ -35,8 +35,8 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
 
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
-    logger.info("Training Decision Tree...")
-    model, cv_scores = train_decision_tree(X_train, y_train, max_depth=10, logger=logger)
+    logger.info("Training Random Forest...")
+    model, cv_scores = train_random_forest(X_train, y_train, n_estimators=100, max_depth=15, cv_test=True, logger=logger)
     
     initial_acc = model.score(X_test, y_test)
     logger.info(f"Initial accuracy: {initial_acc:.3f}")
