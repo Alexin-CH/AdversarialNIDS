@@ -71,7 +71,7 @@ class UNSWNB15():
         self.features = self.features.iloc[indices].reset_index(drop=True)
         self.is_attack = self.is_attack.iloc[indices].reset_index(drop=True)
         self.attack_classes = self.attack_classes.iloc[indices].reset_index(drop=True)
-        return self, self.multi_class
+        return self
 
     def split(self, test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False):
         """ Split the dataset into training and testing sets. """
