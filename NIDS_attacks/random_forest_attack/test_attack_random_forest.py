@@ -18,7 +18,7 @@ from art.estimators.classification import SklearnClassifier
 
 
 
-def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visualization=False):
+def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,per_sample_visualization=False):
 
     logger_mgr = LoggerManager(log_dir='logs', log_name='attack_test')
     logger = logger_mgr.get_logger()
@@ -27,23 +27,24 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
         ds = CICIDS2017(logger=logger).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
-        ds = ds.subset(size=10000, multi_class=True)
+        ds = ds.subset(size=ds_train_size, multi_class=True)  # Smaller dataset for faster training
     else:
         logger.info("Loading UNSWNB15 dataset...")
         ds = UNSWNB15(dataset_size="small").optimize_memory().encode().scale()
-        ds = ds.subset(size=10000, multi_class=True)
+        ds = ds.subset(size=ds_train_size, multi_class=True)  # Smaller dataset for faster training
 
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
     logger.info("Training Random Forest...")
-    model, cv_scores = train_random_forest(X_train, y_train, n_estimators=100, max_depth=15, cv_test=True, logger=logger)
+    model, cv_scores = train_random_forest(X_train, y_train, n_estimators=50, max_depth=10, cv_test=False, logger=logger)
     
     initial_acc = model.score(X_test, y_test)
     logger.info(f"Initial accuracy: {initial_acc:.3f}")
     
     art_classifier = SklearnClassifier(model=model)
     
-    attack = HopSkipJump(classifier=art_classifier,batch_size=32,max_iter=50,max_eval=1000,init_eval=100)
+    # Optimized HopSkipJump parameters for faster execution
+    attack = HopSkipJump(classifier=art_classifier,batch_size=8,max_iter=50,max_eval=100,init_eval=20,init_size=100,verbose=True)
     
     attack_mask = y_test != 0  # All non-benign classes (network attacks)
     if attack_mask.sum() == 0:
@@ -94,4 +95,4 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
 
 
 if __name__ == "__main__":
-    results = simple_hopskipjump_attack(nb_samples=25,per_sample_visualization=True)
+    results = simple_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
