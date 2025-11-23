@@ -20,7 +20,7 @@ from scripts.logger import SimpleLogger
 
 
 def perform_model_analysis(model, X_test, y_test, dir=root_dir, logger=SimpleLogger(), model_name="Model", 
-                          class_names=None, plot=True, save_fig=True, device=None):
+                          plot=True, save_fig=True, device=None):
     """
     Perform complete classification analysis with confusion matrix and report visualization.
     
@@ -32,7 +32,6 @@ def perform_model_analysis(model, X_test, y_test, dir=root_dir, logger=SimpleLog
         y_test: True labels (numpy array, pandas Series, or torch Tensor)
         logger: Logger instance for recording results
         model_name: Name of the model for titles and logs (default: "Model")
-        class_names: List of class names for labels (default: auto-generated)
         device: Device for PyTorch models ('cuda' or 'cpu', default: auto-detect)
     
     Outputs:
@@ -53,13 +52,9 @@ def perform_model_analysis(model, X_test, y_test, dir=root_dir, logger=SimpleLog
         y_true = np.asarray(y_test)
         y_pred = model.predict(X_test)
     
-    # Generate class names if not provided
-    if class_names is None:
-        class_names = [str(i) for i in sorted(np.unique(y_true))]
-    
     # Calculate metrics
-    report = classification_report(y_true, y_pred, target_names=class_names, digits=4, zero_division=0)
-    report_dict = classification_report(y_true, y_pred, target_names=class_names, 
+    report = classification_report(y_true, y_pred, digits=4, zero_division=0)
+    report_dict = classification_report(y_true, y_pred, 
                                        digits=4, output_dict=True, zero_division=0)
     cm = confusion_matrix(y_true, y_pred)
     
