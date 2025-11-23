@@ -17,7 +17,9 @@ from scripts.logger import LoggerManager
 from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier
 
-def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visualization=False):
+
+
+def dt_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,ds_train_size = 10000,per_sample_visualization=False):
 
     logger_mgr = LoggerManager(log_dir='logs', log_name='attack_test')
     logger = logger_mgr.get_logger()
@@ -26,12 +28,12 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
         ds = CICIDS2017(logger=logger).optimize_memory().encode()
-        ds, multi_class = ds.subset(size=10000, multi_class=True)
+        ds = ds.subset(size=ds_train_size, multi_class=True)
     else:
         logger.info("Loading UNSWNB15 dataset...")
-        ds = UNSWNB15(dataset_size="small").optimize_memory().encode()
-        ds, multi_class = ds.subset(size=10000, multi_class=True)
-
+        ds = UNSWNB15(dataset_size="small", logger=logger).optimize_memory().encode()
+        ds = ds.subset(size=ds_train_size, multi_class=True)
+        
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
     logger.info("Training Decision Tree...")
@@ -93,4 +95,4 @@ def simple_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,per_sample_visu
 
 
 if __name__ == "__main__":
-    results = simple_hopskipjump_attack(nb_samples=25,per_sample_visualization=True)
+    results = dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
