@@ -17,8 +17,8 @@ sys.path.append(root_dir)
 from scripts.logger import LoggerManager
 from scripts.analysis.model_analysis import perform_model_analysis
 
-from CICIDS2017.preprocessing.dataset import CICIDS2017
-from UNSWNB15.preprocessing.dataset import UNSWNB15
+from CICIDS2017.dataset import CICIDS2017
+from UNSWNB15.dataset import UNSWNB15
 
 from scripts.models.pytorch.MLP import NetworkIntrusionMLP
 from scripts.models.pytorch.CNN import NetworkIntrustionCNN

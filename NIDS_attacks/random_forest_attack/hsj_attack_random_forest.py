@@ -8,8 +8,9 @@ sys.path.append(root_dir)
 
 import numpy as np
 
-from CICIDS2017.preprocessing.dataset import CICIDS2017
-from UNSWNB15.preprocessing.dataset import UNSWNB15
+from CICIDS2017.dataset import CICIDS2017
+from UNSWNB15.dataset import UNSWNB15
+
 from scripts.models.random_forest.random_forest import train_random_forest
 from scripts.logger import LoggerManager
 

@@ -6,7 +6,7 @@ root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
 sys.path.append(root_dir)
 
 from scripts.logger import LoggerManager
-from CICIDS2017.preprocessing.dataset import CICIDS2017
+from CICIDS2017.dataset import CICIDS2017
 
 lm = LoggerManager(log_dir=f"{root_dir}/logs", log_name="test_pca")
 lm.logger.info("Logger initialized")
