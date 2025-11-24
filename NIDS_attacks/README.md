@@ -48,3 +48,24 @@ results = [dt/rf]_hopskipjump_attack(
     per_sample_visualization=True
 )
 ```
+
+### 2. Surrogate Attack
+#### Principe de Fonctionnement
+
+L'attaque HopSkipJump est une méthode simple qui permet de passer outre l'absence de gradient d'un random forest. Un MLP peu profond est utilisé pour simuler la prédiction du random forest, l'attaque adversaire se fait sur ce réseau de substitut en utilisant les prédictions de ce réseau. Les données perturbée sont ensuite fournit au random forest.
+
+#### Caractéristiques Principales
+
+- **Adapté à tout type de modèle** : Fonctionne sans accès aux gradients du modèle cible
+
+#### Description Étape par Étape
+
+1. **Initialisation** : Un MLP peu profond est entrainé sur le même type de données que le randdom forest.
+
+2. **Perturbation itérative** : L'attaque commence avec un échantillon d'entrée initial `x`.Le processus perturbe itérativement `x` dans une direction estimée vers la frontière de décision, visant la malclassification
+
+3. **Estimation de direction** : La direction de perturbation est déterminée en utilisant une estimation non-biaisée de la direction du gradient à la frontière de décision, basée sur les prédictions du modèle
+
+4. **Contrôle de magnitude** : La magnitude de la perturbation est soigneusement contrôlée pour que l'exemple adversarial reste proche de l'entrée originale
+
+5. **Convergence** : Le processus continue jusqu'à une étape fixée.
