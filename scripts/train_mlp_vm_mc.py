@@ -31,7 +31,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 lm = LoggerManager(
     log_dir=f"{root_dir}/results/logs",
-    log_name="TDM"
+    log_name="TrainMLPMC"
 )
 logger = lm.get_logger()
 title = lm.get_title()
@@ -41,9 +41,9 @@ logger.info(f"Using device: {device}")
 full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
     dataset_size="small",
     logger=logger
-).optimize_memory().encode(attack_encoder="label").scale(scaler="minmax")
+).optimize_memory().encode(attack_encoder="label")
 
-dataset, multiclass = full_dataset.subset(size=100*1000, multi_class=True)
+dataset = full_dataset.subset(size=900*1000, multi_class=True)
 
 X_train, X_val, y_train, y_val = dataset.split(
     one_hot=True,
@@ -51,11 +51,13 @@ X_train, X_val, y_train, y_val = dataset.split(
     to_tensor=True
 )
 
+del full_dataset, dataset  # Free up memory
+
 # Create DataLoaders
 train_dataset = TensorDataset(X_train.to(device), y_train.to(device))
 val_dataset = TensorDataset(X_val.to(device), y_val.to(device))
 
-batch_size = 64
+batch_size = 256
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
@@ -68,16 +70,25 @@ model_type = f"{input_size}x{num_classes}"
 
 criterion = nn.CrossEntropyLoss()
 
-model_mlp = NetworkIntrusionMLP(input_size=input_size, num_classes=num_classes).to(device)
+model_mlp = NetworkIntrusionMLP(
+    input_size=input_size,
+    num_classes=num_classes,
+    scaling_method='minmax',
+    device=device
+)
+
 logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 
-learning_rate_mlp = 1e-2
-num_epochs_mlp = 5*1000
+# Fitting and training MLP
+model_mlp = model_mlp.fit_scalers(X_train=X_train)
 
-mlp_title = f"MLP_mc_{model_type}_{num_epochs_mlp}"
+learning_rate_mlp = 1e-2
+num_epochs_mlp = 100
+
+mlp_title = f"MLPS_mc_{model_type}_{num_epochs_mlp}"
 
 optimizer_mlp = optim.AdamW(model_mlp.parameters(), lr=learning_rate_mlp)
-scheduler_mlp = optim.lr_scheduler.ReduceLROnPlateau(optimizer_mlp, mode='min', factor=0.9, patience=50, min_lr=1e-8)
+scheduler_mlp = optim.lr_scheduler.ReduceLROnPlateau(optimizer_mlp, mode='min', factor=0.9, patience=8, min_lr=1e-8)
 
 model_mlp, train_losses_mlp, val_losses_mlp = train(
     model=model_mlp,

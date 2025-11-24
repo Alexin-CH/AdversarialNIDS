@@ -68,8 +68,7 @@ def perform_model_analysis(model, X_test, y_test, dir=root_dir, logger=SimpleLog
         
     # Plot confusion matrix (left)
     ax_cm = fig.add_subplot(gs[0, 0])
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-            xticklabels=class_names, yticklabels=class_names, ax=ax_cm)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax_cm)
     ax_cm.set_title('Confusion Matrix', fontsize=12, weight='bold')
     ax_cm.set_xlabel('Predicted Label')
     ax_cm.set_ylabel('True Label')
