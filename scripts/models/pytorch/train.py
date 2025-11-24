@@ -12,8 +12,8 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
         losses = []
         for X_train, y_train in train_loader:
             # Forward pass
-            outputs = model(X_train)
-            loss = criterion(outputs, y_train)
+            output = model(X_train)
+            loss = criterion(output, y_train)
             losses.append(loss)
 
         epoch_loss = sum(losses) / len(losses)
@@ -26,8 +26,8 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
 
         scheduler.step(epoch_loss.item())
         
-        # Validation every 20 epochs
-        if epoch % 20 == 0:
+        # Validation
+        if epoch % 10 == 0:
             model.eval()
             with torch.no_grad():
                 val_losses = []

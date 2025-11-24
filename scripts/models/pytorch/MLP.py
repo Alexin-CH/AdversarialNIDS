@@ -3,8 +3,10 @@ import torch
 import torch.nn as nn
 
 class NetworkIntrusionMLP(nn.Module):
-    def __init__(self, input_size, num_classes, scaling_method=None):
+    def __init__(self, input_size, num_classes, scaling_method=None, device='cpu'):
         super(NetworkIntrusionMLP, self).__init__()
+
+        self.device = device
 
         assert scaling_method in [None, 'standard', 'minmax'], "scaling_method must be None, 'standard', or 'minmax'"
         self.scaling_method = scaling_method
@@ -31,7 +33,10 @@ class NetworkIntrusionMLP(nn.Module):
             nn.Linear(32//2, num_classes),
         )
 
+        self.to(device)
+
     def forward(self, x):
+
         # Apply scaling if specified
         if self.scaling_method == 'standard' and self.scaler_is_fitted:
             x = (x - self.mean) / self.std
@@ -40,7 +45,7 @@ class NetworkIntrusionMLP(nn.Module):
 
         features = self.features(x)
         out = self.classifier(features)
-        return torch.softmax(out, dim=1)
+        return out
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
@@ -50,6 +55,7 @@ class NetworkIntrusionMLP(nn.Module):
         to_save = {
             'model_state_dict': self.state_dict(),
             'scaler_is_fitted': self.scaler_is_fitted,
+            'scaling_method': self.scaling_method,
             'mean': self.mean if self.scaler_is_fitted else None,
             'std': self.std if self.scaler_is_fitted else None,
             'min': self.min if self.scaler_is_fitted else None,
@@ -60,21 +66,22 @@ class NetworkIntrusionMLP(nn.Module):
     def load_model(self, path, device='cpu'):
         saved_model = torch.load(path, map_location=device)
         self.scaler_is_fitted = saved_model['scaler_is_fitted']
+        self.scaling_method = saved_model['scaling_method']
         if self.scaler_is_fitted:
-            self.mean = saved_model['mean']
-            self.std = saved_model['std']
-            self.min = saved_model['min']
-            self.max = saved_model['max']
+            self.mean = saved_model['mean'].to(device)
+            self.std = saved_model['std'].to(device)
+            self.min = saved_model['min'].to(device)
+            self.max = saved_model['max'].to(device)
 
         self.load_state_dict(saved_model['model_state_dict'])
         self.to(device)
         return self
     
     def fit_scalers(self, X_train):
-        self.mean = nn.Parameter(X_train.mean(axis=0).values, requires_grad=False)
-        self.std = nn.Parameter(X_train.std(axis=0).values, requires_grad=False)
-        self.min = nn.Parameter(X_train.min(axis=0).values, requires_grad=False)
-        self.max = nn.Parameter(X_train.max(axis=0).values, requires_grad=False)
+        self.mean = X_train.mean(dim=0).to(self.device)
+        self.std = X_train.std(dim=0).to(self.device)
+        self.min = X_train.min(dim=0).values.to(self.device)
+        self.max = X_train.max(dim=0).values.to(self.device)
         self.scaler_is_fitted = True
         return self
     
