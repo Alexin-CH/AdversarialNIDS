@@ -35,7 +35,10 @@ def download_prepare(logger=SimpleLogger()):
         logger.debug("Cleaning column names")
         col_names = {col: col.strip() for col in data.columns}
         data.rename(columns=col_names, inplace=True)
-        
+
+        # Drop unnecessary columns
+        data.drop(columns=['Infiltration', 'Heartbleed', 'Bot'], errors='ignore', inplace=True)
+
         # Remove duplicates
         logger.debug("Removing duplicate rows")
         initial_rows = len(data)
@@ -126,19 +129,17 @@ def download_prepare(logger=SimpleLogger()):
             'DoS GoldenEye': 'DoS',
             'DoS slowloris': 'DoS',
             'DoS Slowhttptest': 'DoS',
-            'PortScan': 'Port Scan',
             'FTP-Patator': 'Brute Force',
             'SSH-Patator': 'Brute Force',
             'Web Attack Brute Force': 'Web Attack',
             'Web Attack XSS': 'Web Attack',
-            'Web Attack Sql Injection': 'Web Attack'
+            'Web Attack Sql Injection': 'Web Attack',
+            'PortScan': 'PortScan',
         }
-        # Drop Infiltration and Heartbleed
-        data.drop(columns=['Infiltration', 'Heartbleed', 'Bot'], errors='ignore', inplace=True)
-
         # Creating a new column 'Attack Type' in the DataFrame based on the attack_map dictionary
         data['Attack Type'] = data['Label'].map(attack_map)
         data.drop('Label', axis=1, inplace=True)
+        data.dropna(subset=['Attack Type'], inplace=True)
         
         # Final dimensions
         final_rows, final_cols = data.shape
