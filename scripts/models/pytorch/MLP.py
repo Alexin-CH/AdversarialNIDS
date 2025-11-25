@@ -3,6 +3,9 @@ import torch
 import torch.nn as nn
 
 class NetworkIntrusionMLP(nn.Module):
+    """layer_features: list of integers defining the number of neurons in each hidden layer of the feature extractor
+     layer_classifier: list of integers defining the number of neurons in each hidden layer of the classifier
+    """
     def __init__(self, input_size,layer_features,layer_classifier, num_classes, scaling_method=None, device='cpu'):
         super(NetworkIntrusionMLP, self).__init__()
 
