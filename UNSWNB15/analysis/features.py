@@ -21,8 +21,8 @@ def compute_features_batch(X, dico,eps=1e-6):
 
     return X
 
-def first_level_features(self): 
-    first_level = [
+
+first_level = [
         "srcip",
         "sport",
         "dstip",
@@ -64,4 +64,3 @@ def first_level_features(self):
         "ct_src_dport_ltm",
         "ct_dst_sport_ltm",
     ]
-    return first_level

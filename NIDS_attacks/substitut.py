@@ -32,15 +32,15 @@ class Sub_MLP(nn.Module):
             self.activation,
             nn.Linear(200, 200),
             self.activation,
-            nn.Linear(40, 40),
+            nn.Linear(200, 40),
             self.activation
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(100,100),
+            nn.Linear(40,40),
             self.activation,
             nn.Dropout(0.1),
-            nn.Linear(100, num_classes),
+            nn.Linear(40, num_classes),
         )
 
         self.to(device)
@@ -96,7 +96,7 @@ class Sub_MLP(nn.Module):
         return self
 
 def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, logger=SimpleLogger(), model_name="Model", 
-                          plot_analysis=False,plot_loss=True save_fig=True, device=None):
+                          plot_analysis=False,plot_loss=True,save_fig=True, device=None):
     is_pytorch = isinstance(model, nn.Module)
     
     # Get predictions
@@ -115,8 +115,15 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
         
     # Partition of the data gotten from the attacked model
     X_train, X_val, y_train, y_val = train_test_split(X_test, y_pred, test_size=0.2)
-    train_dataset = TensorDataset(X_train.to(device), y_train.to(device))
-    val_dataset = TensorDataset(X_val.to(device), y_val.to(device))
+    
+    X_train  = torch.tensor(X_train, dtype=torch.float32).to(device)
+    y_train  = torch.tensor(y_train, dtype=torch.long).to(device)
+
+    X_val = torch.tensor(X_val, dtype=torch.float32).to(device)
+    y_val = torch.tensor(y_val, dtype=torch.long).to(device)
+    
+    train_dataset = TensorDataset(X_train, y_train)
+    val_dataset = TensorDataset(X_val, y_val)
     train_loader = DataLoader(train_dataset, batch_size=256, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=256, shuffle=False)
     
