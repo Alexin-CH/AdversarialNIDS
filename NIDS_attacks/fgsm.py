@@ -19,10 +19,9 @@ def attack_fgsm(model, criterion, x_val, target, top_features=None, eps = 0.01):
     loss = criterion(pred, target) # target needs to be class indices, not one-hot. Pred is raw logits
 
     loss.backward()
+
     with torch.no_grad():
-        if top_features is None:
-            x_adv = x_adv - eps * x_adv.grad.sign()
-        else:
-            x_adv[:, top_features] = x_adv[:, top_features] - eps * x_adv.grad[:, top_features].sign()
-    return x_adv, loss.item(), pred.detach().cpu().numpy()
+        x_adv = x_adv - eps * x_adv.grad.sign()
+
+    return x_adv.detach(), loss.detach().cpu().numpy(), pred.detach().cpu().numpy()
     

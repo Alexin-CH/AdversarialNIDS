@@ -19,7 +19,7 @@ from CICIDS2017.preprocessing.subset import subset_indices
 from CICIDS2017.analysis.distribution import data_distribution
 from CICIDS2017.analysis.mutual_info import mutual_info_classif
 from CICIDS2017.analysis.pca import apply_pca
-from CICIDS2017.analysis.features import first_level_features
+from CICIDS2017.analysis.features import FIRST_LEVEL_FEATURES, MODIFIABLE_FEATURES
 
 class CICIDS2017:
     def __init__(self, dataset_size=None, logger=SimpleLogger()):
@@ -27,6 +27,8 @@ class CICIDS2017:
         self.logger = logger
         self.data = download_prepare(logger=self.logger)
         self.multi_class = True
+        self.FIRST_LEVEL_FEATURES = FIRST_LEVEL_FEATURES
+        self.MODIFIABLE_FEATURES = MODIFIABLE_FEATURES
 
     def optimize_memory(self):
         """ Optimize memory usage of the dataset. """
@@ -134,8 +136,4 @@ class CICIDS2017:
         )
         self.logger.info(f"Explained variance ratio: {explained_variance_ratio.sum():.4f}")
         return principal_components, explained_variance_ratio
-    
-    def first_level_features(self):
-        """ Get the list of first-level features for CICIDS2017 dataset. """
-        return first_level_features()
-    
+        
