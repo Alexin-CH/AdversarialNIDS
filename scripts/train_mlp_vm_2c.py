@@ -83,7 +83,7 @@ logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 model_mlp = model_mlp.fit_scalers(X_train=X_train)
 
 learning_rate_mlp = 1e-2
-num_epochs_mlp = 100
+num_epochs_mlp = 400
 
 mlp_title = f"MLPS_2c_{model_type}_{num_epochs_mlp}"
 

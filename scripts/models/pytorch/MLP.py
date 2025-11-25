@@ -63,18 +63,18 @@ class NetworkIntrusionMLP(nn.Module):
         }
         torch.save(to_save, path)
 
-    def load_model(self, path, device='cpu'):
-        saved_model = torch.load(path, map_location=device)
+    def load_model(self, path):
+        saved_model = torch.load(path, map_location=self.device)
         self.scaler_is_fitted = saved_model['scaler_is_fitted']
         self.scaling_method = saved_model['scaling_method']
         if self.scaler_is_fitted:
-            self.mean = saved_model['mean'].to(device)
-            self.std = saved_model['std'].to(device)
-            self.min = saved_model['min'].to(device)
-            self.max = saved_model['max'].to(device)
+            self.mean = saved_model['mean'].to(self.device)
+            self.std = saved_model['std'].to(self.device)
+            self.min = saved_model['min'].to(self.device)
+            self.max = saved_model['max'].to(self.device)
 
         self.load_state_dict(saved_model['model_state_dict'])
-        self.to(device)
+        self.to(self.device)
         return self
     
     def fit_scalers(self, X_train):

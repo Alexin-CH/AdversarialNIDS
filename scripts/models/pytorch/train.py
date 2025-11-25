@@ -48,4 +48,8 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
             
         tqdm_epochs.set_description(f"Loss: {epoch_loss.item():.4f}, Val Loss: {epoch_val_loss.item():.4f}, LR: {scheduler.get_last_lr()[0]:.6f}")
 
+    # Final model save
+    final_model_path = f"{dir}/{title}_final.pt"
+    model.save_model(final_model_path)
+    
     return model, epoch_losses, epoch_val_losses

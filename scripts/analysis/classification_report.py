@@ -76,4 +76,4 @@ def plot_classification_report(report_dict, ax, title):
     for i in range(5):
         table[(separator_idx, i)].set_facecolor('#E7E6E6')
     
-    ax.set_title(title, fontsize=12, weight='bold', pad=50)
+    ax.set_title(title, fontsize=12, weight='bold', pad=10)

@@ -43,7 +43,7 @@ full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
     logger=logger
 ).optimize_memory().encode(attack_encoder="label")
 
-dataset = full_dataset.subset(size=900*1000, multi_class=True)
+dataset = full_dataset.subset(size=400*1000, multi_class=True)
 
 X_train, X_val, y_train, y_val = dataset.split(
     one_hot=True,
@@ -83,7 +83,7 @@ logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 model_mlp = model_mlp.fit_scalers(X_train=X_train)
 
 learning_rate_mlp = 1e-2
-num_epochs_mlp = 100
+num_epochs_mlp = 400
 
 mlp_title = f"MLPS_mc_{model_type}_{num_epochs_mlp}"
 
