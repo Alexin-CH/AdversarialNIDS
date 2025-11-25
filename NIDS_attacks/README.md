@@ -69,3 +69,15 @@ L'attaque HopSkipJump est une méthode simple qui permet de passer outre l'absen
 4. **Contrôle de magnitude** : La magnitude de la perturbation est soigneusement contrôlée pour que l'exemple adversarial reste proche de l'entrée originale
 
 5. **Convergence** : Le processus continue jusqu'à une étape fixée.
+
+### 3. Constrains
+Pour avoir des attaques adverses cohérentes, on veut avoir les bornes min/max uniquement à partir des échantillons 
+d’attaque afin de garantir que les exemples adverses restent réalistes et dans l’espace de distribution des attaques, 
+en évitant qu’ils ne dérivent vers des plages de caractéristiques propres aux données BENIGN
+
+```python
+attack_mask = y_train != 0 #or 3 for BENIGN
+X_attacks = X_train[attack_mask]
+mins = torch.tensor(np.percentile(X_attacks, 1, axis=0), dtype=torch.float32).to(device)
+maxs = torch.tensor(np.percentile(X_attacks, 99, axis=0), dtype=torch.float32).to(device)
+```
