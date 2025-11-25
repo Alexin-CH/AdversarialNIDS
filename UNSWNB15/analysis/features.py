@@ -22,7 +22,7 @@ def compute_features_batch(X, dico,eps=1e-6):
     return X
 
 
-first_level = [
+first_level_features = [
         "srcip",
         "sport",
         "dstip",

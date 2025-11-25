@@ -177,4 +177,5 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
         plot=plot_analysis,
         device=device
     )
+    return sub, cm, cr
     
