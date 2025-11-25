@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 class NetworkIntrusionMLP(nn.Module):
-    def __init__(self, input_size, num_classes, scaling_method=None, device='cpu'):
+    def __init__(self, input_size, num_classes, reduction=1, scaling_method=None, device='cpu'):
         super(NetworkIntrusionMLP, self).__init__()
 
         self.device = device
@@ -15,22 +15,22 @@ class NetworkIntrusionMLP(nn.Module):
         self.activation = nn.Mish()
 
         self.features = nn.Sequential(
-            nn.Linear(input_size, 256//2),
-            nn.BatchNorm1d(256//2),
+            nn.Linear(input_size, 128//reduction),
+            nn.BatchNorm1d(128//reduction),
             self.activation,
-            nn.Linear(256//2, 128//2),
-            nn.BatchNorm1d(128//2),
+            nn.Linear(128//reduction, 64//reduction),
+            nn.BatchNorm1d(64//reduction),
             self.activation,
-            nn.Linear(128//2, 64//2),
-            nn.BatchNorm1d(64//2),
+            nn.Linear(64//reduction, 32//reduction),
+            nn.BatchNorm1d(32//reduction),
             self.activation
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(64//2, 32//2),
+            nn.Linear(32//reduction, 16//reduction),
             self.activation,
             nn.Dropout(0.1),
-            nn.Linear(32//2, num_classes),
+            nn.Linear(16//reduction, num_classes),
         )
 
         self.to(device)
