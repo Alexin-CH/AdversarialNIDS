@@ -78,8 +78,8 @@ en évitant qu’ils ne dérivent vers des plages de caractéristiques propres a
 ```python
 attack_mask = y_train != 0 #or 3 for BENIGN
 X_attacks = X_train[attack_mask]
-mins = torch.tensor(np.percentile(X_attacks, 1, axis=0), dtype=torch.float32).to(device)
-maxs = torch.tensor(np.percentile(X_attacks, 99, axis=0), dtype=torch.float32).to(device)
+min_vals=torch.tensor(X_train,dtype=torch.float32).min(axis=0).values
+max_vals=torch.tensor(X_train,dtype=torch.float32).max(axis=0).values
 ```
 
 ### 3. Méthode par Substitut
