@@ -8,21 +8,26 @@ sys.path.append(root_dir)
 from scripts.logger import LoggerManager
 from CICIDS2017.dataset import CICIDS2017
 
-lm = LoggerManager(log_dir=f"{root_dir}/logs", log_name="test_pca")
+lm = LoggerManager(
+    root_dir=root_dir,
+    log_name="PCA_Analysis"
+)
 lm.logger.info("Logger initialized")
 
-dataset = CICIDS2017(logger=lm.logger).encode().scale(scaler="minmax").optimize_memory()
+dataset = CICIDS2017(logger=lm.logger).encode().optimize_memory()
 
 ##############################################
 ###############  PCA Analysis  ###############
 ##############################################
+
+print("=" * 50)
 
 from sklearn.decomposition import PCA
 
 pca_componants = []
 for n_components in range(1, len(dataset.data.columns), 2):
     pca = PCA(n_components=n_components)
-    pca_features = pca.fit_transform(dataset.scaled_features)
+    pca_features = pca.fit_transform(dataset.features)
     pca_componants.append((n_components, pca, pca_features))
     lm.logger.info(f"PCA with {n_components} components")
     lm.logger.info(f"Explained variance ratio: {pca.explained_variance_ratio_.sum():.4f}")
@@ -38,5 +43,5 @@ plt.title('Explained Variance vs Number of PCA Components')
 plt.xlabel('Number of PCA Components')
 plt.ylabel('Explained Variance Ratio')
 plt.grid()
-plt.savefig(f"{root_dir}/logs/pca_explained_variance.png")
+plt.savefig(f"{root_dir}/results/PCA_Analysis/explained_variance.png")
 plt.close()

@@ -9,18 +9,23 @@ from scripts.logger import LoggerManager
 
 from CICIDS2017.dataset import CICIDS2017
 
-lm = LoggerManager(log_dir=f"{root_dir}/logs", log_name="test_entropy")
+lm = LoggerManager(
+    root_dir=root_dir,
+    log_name="Entropy_Analysis",
+)
 lm.logger.info("Logger initialized")
 
 dataset = CICIDS2017(logger=lm.logger).encode(attack_encoder="label").optimize_memory().scale(scaler="minmax")
 
 ##############################################
-###############  Entropy Analysis  ###############
+#############  Entropy Analysis  #############
 ##############################################
+
+print("=" * 50)
 
 from sklearn.feature_selection import mutual_info_classif
 
-X = dataset.scaled_features
+X = dataset.features
 y = dataset.attack_classes
 
 lm.logger.info("Calculating mutual information for feature selection")
