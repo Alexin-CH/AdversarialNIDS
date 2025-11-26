@@ -162,3 +162,38 @@ CICIDS2017_DICT = {
 
 MODIFIABLE_FEATURES = [CICIDS2017_DICT[feat] for feat in FIRST_LEVEL_FEATURES]
 
+
+INTEGER_FEATURES = [
+    'Destination Port',
+    'Total Fwd Packets',
+    'Total Backward Packets',
+    'Total Length of Fwd Packets',
+    'Total Length of Bwd Packets',
+    'Fwd Packet Length Max',
+    'Fwd Packet Length Min',
+    'Bwd Packet Length Max',
+    'Bwd Packet Length Min',
+    'FIN Flag Count',
+    'SYN Flag Count',
+    'RST Flag Count',
+    'PSH Flag Count',
+    'ACK Flag Count',
+    'URG Flag Count',
+    'CWE Flag Count',
+    'ECE Flag Count',
+    'Fwd PSH Flags',
+    'Fwd URG Flags',
+    'Fwd Header Length',
+    'Bwd Header Length',
+    'Fwd Header Length.1',
+    'Subflow Fwd Packets',
+    'Subflow Fwd Bytes',
+    'Subflow Bwd Packets',
+    'Subflow Bwd Bytes',
+    'Init_Win_bytes_forward',
+    'Init_Win_bytes_backward',
+    'act_data_pkt_fwd',
+    'min_seg_size_forward'
+]
+
+INTEGER_INDICES = [CICIDS2017_DICT[feat] for feat in INTEGER_FEATURES]
