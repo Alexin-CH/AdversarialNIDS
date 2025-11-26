@@ -2,7 +2,7 @@ import time
 import torch
 from tqdm import tqdm
 
-def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_loader, title, dir, device, logger):
+def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_loader, title, root_dir, device, logger):
     epoch_losses = []
     epoch_val_losses = []
     # Training loop
