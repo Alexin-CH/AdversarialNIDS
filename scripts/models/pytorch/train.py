@@ -27,7 +27,7 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
         scheduler.step(epoch_loss.item())
         
         # Validation
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             model.eval()
             with torch.no_grad():
                 val_losses = []
