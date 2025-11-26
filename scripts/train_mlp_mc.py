@@ -30,8 +30,8 @@ from scripts.models.pytorch.visualization import display_loss
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 lm = LoggerManager(
-    log_dir=f"{root_dir}/results/logs",
-    log_name="TrainMLP2C"
+    root_dir=root_dir,
+    log_name="TrainMLPMC"
 )
 logger = lm.get_logger()
 title = lm.get_title()
@@ -43,7 +43,7 @@ full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
     logger=logger
 ).optimize_memory().encode(attack_encoder="label")
 
-dataset = full_dataset.subset(size=900*1000, multi_class=False)
+dataset = full_dataset.subset(size=400*1000, multi_class=True)
 
 X_train, X_val, y_train, y_val = dataset.split(
     one_hot=True,
@@ -85,7 +85,7 @@ model_mlp = model_mlp.fit_scalers(X_train=X_train)
 learning_rate_mlp = 1e-2
 num_epochs_mlp = 400
 
-mlp_title = f"MLPS_2c_{model_type}_{num_epochs_mlp}"
+mlp_title = f"MLPS_mc_{model_type}_{num_epochs_mlp}"
 
 optimizer_mlp = optim.AdamW(model_mlp.parameters(), lr=learning_rate_mlp)
 scheduler_mlp = optim.lr_scheduler.ReduceLROnPlateau(optimizer_mlp, mode='min', factor=0.9, patience=8, min_lr=1e-8)
@@ -108,7 +108,7 @@ display_loss(
     list_epoch_loss=train_losses_mlp,
     list_val_loss=val_losses_mlp,
     title=f"{title}_{mlp_title}",
-    dir=f"{root_dir}/results/plots",
+    root_dir=root_dir,
     plot=False,
     logger=logger,
     epoch_min=2
@@ -119,8 +119,8 @@ cm, cr = perform_model_analysis(
     X_test=X_val,
     y_test=y_val,
     logger=logger,
-    model_name=f"{title}_{mlp_title}",
-    dir=f"{root_dir}/results/analysis",
+    title=f"{title}_{mlp_title}",
+    root_dir=root_dir,
     plot=False,
     device=device
 )

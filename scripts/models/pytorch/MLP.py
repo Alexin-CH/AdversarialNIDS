@@ -3,10 +3,19 @@ import torch
 import torch.nn as nn
 
 class NetworkIntrusionMLP(nn.Module):
-    """layer_features: list of integers defining the number of neurons in each hidden layer of the feature extractor
-     layer_classifier: list of integers defining the number of neurons in each hidden layer of the classifier
-    """
-    def __init__(self, input_size,layer_features,layer_classifier, num_classes, scaling_method=None, device='cpu'):
+    """ Multi-Layer Perceptron (MLP) for Network Intrusion Detection. """
+    def __init__(self, input_size, layer_features, layer_classifier, num_classes, scaling_method=None, device='cpu'):
+        """
+        Initialize the MLP model.
+
+        Args:
+            input_size (int): Number of input features.
+            layer_features (list of int): List specifying the number of neurons in each hidden layer of the feature extractor.
+            layer_classifier (list of int): List specifying the number of neurons in each hidden layer of the classifier.
+            num_classes (int): Number of output classes.
+            scaling_method (str or None): Feature scaling method ('standard', 'minmax', or None).
+            device (str): Device to run the model on ('cpu' or 'cuda').
+        """
         super(NetworkIntrusionMLP, self).__init__()
 
         self.device = device
@@ -17,38 +26,49 @@ class NetworkIntrusionMLP(nn.Module):
 
         self.activation = nn.Mish()
 
-        layers = []        
-        layers.append(nn.Linear(input_size, layer_features[0]))
-        layers.append(nn.BatchNorm1d(layer_features[0]))
-        layers.append(self.activation)
+        layers = [
+            nn.Linear(input_size, layer_features[0]),
+            nn.BatchNorm1d(layer_features[0]),
+            self.activation
+        ]
 
         for in_f, out_f in zip(layer_features[:-1], layer_features[1:]):
-            layers.append(nn.Linear(in_f, out_f))
-            layers.append(nn.BatchNorm1d(out_f))
-            layers.append(self.activation)
-        #Wrap feature layers
+            layers.extend([
+                nn.Linear(in_f, out_f),
+                nn.BatchNorm1d(out_f),
+                self.activation
+            ])
+
+        # Wrap feature layers
         self.features = nn.Sequential(*layers)
 
         classifier = []
-        classifier.append(nn.Linear(layer_features[-1], layer_classifier[0]))
-        classifier.append(self.activation)
+        layer_classifier = [layer_features[-1]] + layer_classifier
         
         for in_c, out_c in zip(layer_classifier[:-1], layer_classifier[1:]):
-            classifier.append(nn.Linear(in_c, out_c))
-            classifier.append(self.activation)
-            nn.Dropout(0.1),
+            classifier.extend([
+                nn.Linear(in_c, out_c),
+                self.activation,
+                nn.Dropout(0.1)
+            ])
             
         #Add final output layer
         classifier.append(nn.Linear(layer_classifier[-1], num_classes))
         
         #Wrap classifier layers
         self.classifier = nn.Sequential(*classifier)
-        
 
         self.to(device)
 
     def forward(self, x):
+        """
+        Forward pass of the MLP.
 
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, input_size).
+        Returns:
+            torch.Tensor: Output tensor of shape (batch_size, num_classes).
+        """
         # Apply scaling if specified
         if self.scaling_method == 'standard' and self.scaler_is_fitted:
             x = (x - self.mean) / self.std
@@ -60,10 +80,18 @@ class NetworkIntrusionMLP(nn.Module):
         return out
 
     def num_params(self):
+        """ Return the number of trainable parameters in the model. """
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
     
-    def save_model(self, path):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+    def save_model(self, root_dir, model_name):
+        """
+        Save the model state and scaler parameters.
+
+        Args:
+            root_dir (str): Root directory to save the model.
+        """
+        dir = os.path.join(root_dir, "results", "saved_models")
+        os.makedirs(dir, exist_ok=True)
         to_save = {
             'model_state_dict': self.state_dict(),
             'scaler_is_fitted': self.scaler_is_fitted,
@@ -73,9 +101,15 @@ class NetworkIntrusionMLP(nn.Module):
             'min': self.min if self.scaler_is_fitted else None,
             'max': self.max if self.scaler_is_fitted else None,
         }
-        torch.save(to_save, path)
+        torch.save(to_save, os.path.join(dir, model_name))
 
     def load_model(self, path):
+        """
+        Load the model state and scaler parameters.
+
+        Args:
+            path (str): Path to the saved model file.
+        """
         saved_model = torch.load(path, map_location=self.device)
         self.scaler_is_fitted = saved_model['scaler_is_fitted']
         self.scaling_method = saved_model['scaling_method']
@@ -90,6 +124,12 @@ class NetworkIntrusionMLP(nn.Module):
         return self
     
     def fit_scalers(self, X_train):
+        """
+        Fit the scaler parameters based on the training data.
+
+        Args:
+            X_train (torch.Tensor): Training data tensor of shape (num_samples, num_features).
+        """
         self.mean = X_train.mean(dim=0).to(self.device)
         self.std = X_train.std(dim=0).to(self.device)
         self.min = X_train.min(dim=0).values.to(self.device)

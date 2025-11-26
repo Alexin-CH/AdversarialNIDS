@@ -18,10 +18,12 @@ from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier
 
 
-
 def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,per_sample_visualization=False):
 
-    logger_mgr = LoggerManager(log_dir='logs', log_name='attack_test')
+    logger_mgr = LoggerManager(
+        root_dir=root_dir,
+        log_name=f"hsj_attack_random_forest_{dataset}"
+    )
     logger = logger_mgr.get_logger()
     logger.info("Starting HopSkipJump attack on Random Forest")
     
@@ -71,7 +73,6 @@ def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 100
     original_acc = (y_pred_original == y_attacks).mean()
     adversarial_acc = (y_pred_adversarial == y_attacks).mean()  # We want it as low as possible (good for attacker)
     attack_success_rate = (y_pred_adversarial == 0).mean()  # Success = predicted as benign
-    
 
     perturbation = np.linalg.norm(X_adv - X_attacks, axis=1).mean() # Mean perturbation (L2 norm)
     

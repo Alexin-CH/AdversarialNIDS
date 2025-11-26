@@ -41,15 +41,13 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
                 epoch_val_losses.append(epoch_val_loss.cpu().detach().numpy())
 
             # Save model checkpoint
-            checkpoint_path = f"{dir}/{title}_epoch_{epoch+1}.pt"
-            model.save_model(checkpoint_path)
+            model.save_model(root_dir=root_dir, model_name=f"{title}_epoch_{epoch+1}.pt")
         else:
             epoch_val_losses.append(epoch_val_losses[-1] if epoch_val_losses else 0)
             
         tqdm_epochs.set_description(f"Loss: {epoch_loss.item():.4f}, Val Loss: {epoch_val_loss.item():.4f}, LR: {scheduler.get_last_lr()[0]:.6f}")
 
     # Final model save
-    final_model_path = f"{dir}/{title}_final.pt"
-    model.save_model(final_model_path)
+    model.save_model(root_dir=root_dir, model_name=f"{title}_final.pt")
     
     return model, epoch_losses, epoch_val_losses
