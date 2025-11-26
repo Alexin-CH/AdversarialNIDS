@@ -16,7 +16,11 @@ def attack_fgsm(model, criterion, x_val, target, top_features=None, eps = 0.01):
     x_adv = x_val.clone().detach().requires_grad_(True)
 
     pred = model(x_adv)
-    loss = criterion(pred, target) # target needs to be class indices, not one-hot. Pred is raw logits
+
+    diff = torch.norm(x_adv - x_val)
+
+    # target needs to be class indices, not one-hot. Pred is raw logits
+    loss = criterion(pred, target) + diff
 
     loss.backward()
 
