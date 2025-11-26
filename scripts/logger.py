@@ -24,8 +24,16 @@ class SimpleLogger:
         print(f"[CRITICAL] {message}")
 
 class LoggerManager:
-    def __init__(self, log_dir="logs", log_name="log"):
-        os.makedirs(log_dir, exist_ok=True)
+    """Logger Manager to handle logging to file and console with timestamps."""
+    def __init__(self, root_dir='.', log_name="log"):
+        """
+        Initialize the LoggerManager.
+
+        Args:
+            root_dir (str): Root directory to save logs.
+            log_name (str): Base name for the log file.
+        """
+        log_dir = os.path.join(root_dir, "results", "logs")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         os.makedirs(log_dir, exist_ok=True)
@@ -53,7 +61,7 @@ class LoggerManager:
             self.logger.addHandler(self.fh)
             self.logger.addHandler(self.ch)
 
-    def set_level(self, level):
+    def set_level(self, level=logging.INFO):
         """Change the logging level dynamically."""
         self.logger.setLevel(level)
         self.fh.setLevel(level)
