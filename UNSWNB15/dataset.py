@@ -19,7 +19,7 @@ from UNSWNB15.preprocessing.subset import subset_indices
 from UNSWNB15.analysis.distribution import data_distribution
 from UNSWNB15.analysis.mutual_info import mutual_info_classif
 from UNSWNB15.analysis.pca import apply_pca
-from UNSWNB15.analysis.features import first_level_features
+from UNSWNB15.analysis.features import FIRST_LEVEL_FEATURES, MODIFIABLE_FEATURES
 
 class UNSWNB15():
     def __init__(self, dataset_size="small", logger=SimpleLogger()):
@@ -27,6 +27,8 @@ class UNSWNB15():
         self.logger = logger
         self.data = download_prepare(logger=self.logger, dataset_size=dataset_size)
         self.multi_class = True
+        self.FIRST_LEVEL_FEATURES = FIRST_LEVEL_FEATURES
+        self.MODIFIABLE_FEATURES = MODIFIABLE_FEATURES
 
         self.categorical_cols = ["proto", "state", "service", "sport", "Destination Port"]
         for col in self.categorical_cols:
@@ -141,8 +143,3 @@ class UNSWNB15():
         )
         self.logger.info(f"Explained variance ratio: {explained_variance_ratio.sum():.4f}")
         return principal_components, explained_variance_ratio
-    
-    def first_level_features(self):
-        """ Get the list of first-level features for UNSWNB15 dataset. """
-        return first_level_features()
-    
