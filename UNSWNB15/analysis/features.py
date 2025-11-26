@@ -113,3 +113,39 @@ UNSWNB15_DICT = {
 }
 
 MODIFIABLE_FEATURES = [UNSWNB15_DICT[feat] for feat in FIRST_LEVEL_FEATURES if feat in UNSWNB15_DICT]
+
+INTEGER_FEATURES = [
+    'sport',
+    'Destination Port',
+    'proto',
+    'state',
+    'Total Length of Fwd Packets',
+    'Total Length of Bwd Packets',
+    'sttl',
+    'dttl',
+    'sloss',
+    'dloss',
+    'service',
+    'Total Fwd Packets',
+    'Total Backward Packets',
+    'Init_Win_bytes_forward',
+    'Init_Win_bytes_backward',
+    'stcpb',
+    'dtcpb',
+    'trans_depth',
+    'res_bdy_len',
+    'is_sm_ips_ports',
+    'ct_state_ttl',
+    'ct_flw_http_mthd',
+    'is_ftp_login',
+    'ct_ftp_cmd',
+    'ct_srv_src',
+    'ct_srv_dst',
+    'ct_dst_ltm',
+    'ct_src_ltm',
+    'ct_src_dport_ltm',
+    'ct_dst_sport_ltm',
+    'ct_dst_src_ltm'
+]
+
+INTEGER_INDICES = [UNSWNB15_DICT[feat] for feat in INTEGER_FEATURES if feat in UNSWNB15_DICT]
