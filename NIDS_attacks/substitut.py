@@ -14,91 +14,30 @@ from scripts.analysis.pytorch_prediction import get_pytorch_predictions
 from scripts.models.pytorch.train import train
 from scripts.models.pytorch.visualization import display_loss
 from scripts.analysis.model_analysis import perform_model_analysis
+from scripts.models.pytorch.MLP import NetworkIntrusionMLP
 
-class Sub_MLP(nn.Module):
-    def __init__(self, input_size, num_classes, scaling_method=None, device='cpu'):
-        super(Sub_MLP, self).__init__()
 
-        self.device = device
-
-        assert scaling_method in [None, 'standard', 'minmax'], "scaling_method must be None, 'standard', or 'minmax'"
-        self.scaling_method = scaling_method
-        self.scaler_is_fitted = False
-
-        self.activation = nn.Mish()
-
-        self.features = nn.Sequential(
-            nn.Linear(input_size, 200),
-            self.activation,
-            nn.Linear(200, 200),
-            self.activation,
-            nn.Linear(200, 40),
-            self.activation
-        )
-
-        self.classifier = nn.Sequential(
-            nn.Linear(40,40),
-            self.activation,
-            nn.Dropout(0.1),
-            nn.Linear(40, num_classes),
-        )
-
-        self.to(device)
-
-    def forward(self, x):
-
-        # Apply scaling if specified
-        if self.scaling_method == 'standard' and self.scaler_is_fitted:
-            x = (x - self.mean) / self.std
-        elif self.scaling_method == 'minmax' and self.scaler_is_fitted:
-            x = (x - self.min) / (self.max - self.min)
-
-        features = self.features(x)
-        out = self.classifier(features)
-        return out
-
-    def num_params(self):
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
-    
-    def save_model(self, path):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        to_save = {
-            'model_state_dict': self.state_dict(),
-            'scaler_is_fitted': self.scaler_is_fitted,
-            'scaling_method': self.scaling_method,
-            'mean': self.mean if self.scaler_is_fitted else None,
-            'std': self.std if self.scaler_is_fitted else None,
-            'min': self.min if self.scaler_is_fitted else None,
-            'max': self.max if self.scaler_is_fitted else None,
-        }
-        torch.save(to_save, path)
-
-    def load_model(self, path):
-        saved_model = torch.load(path, map_location=self.device)
-        self.scaler_is_fitted = saved_model['scaler_is_fitted']
-        self.scaling_method = saved_model['scaling_method']
-        if self.scaler_is_fitted:
-            self.mean = saved_model['mean'].to(self.device)
-            self.std = saved_model['std'].to(self.device)
-            self.min = saved_model['min'].to(self.device)
-            self.max = saved_model['max'].to(self.device)
-
-        self.load_state_dict(saved_model['model_state_dict'])
-        self.to(self.device)
-        return self
-    
-    def fit_scalers(self, X_train):
-        self.mean = X_train.mean(dim=0).to(self.device)
-        self.std = X_train.std(dim=0).to(self.device)
-        self.min = X_train.min(dim=0).values.to(self.device)
-        self.max = X_train.max(dim=0).values.to(self.device)
-        self.scaler_is_fitted = True
-        return self
-
-def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, logger=SimpleLogger(), model_name="Model", 
+def attack_substitut(num_classes,input_size,model,X_test,y_test,root_dir=root_dir, logger=SimpleLogger(), model_name="Model", 
                           plot_analysis=False,plot_loss=True,save_fig=True, device=None):
+    """
+    Args:   num_classes : number of classes in the dataset
+            input_size : size of the input
+            model : model to attack
+            X_test : test data      
+            y_test : test labels
+            root_dir : root directory to save results
+            logger : logger to use
+            model_name : name of the model attacked
+            plot_analysis : whether to plot the analysis results
+            plot_loss : whether to plot the loss curves
+            save_fig : whether to save the figures
+            device : device to use
+        Returns:
+            sub : substitute model trained
+            cm : confusion matrix of the substitute model
+            cr : classification report of the substitute model"""
     is_pytorch = isinstance(model, nn.Module)
-    
+    """Train a substitute model to mimic the behavior of a given model."""
     # Get predictions
     if is_pytorch:
         # Auto-detect device if not specified
@@ -106,6 +45,7 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         logger.info(f"Running analysis for PyTorch model: {model_name} on device: {device}")
         y_pred, y_true = get_pytorch_predictions(model, X_test, y_test, device)
+    #y_true is not used right now but could be useful in the future
     else:
         logger.info(f"Running analysis for scikit-learn model: {model_name}")
         y_true = np.asarray(y_test)
@@ -128,10 +68,12 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
     val_loader = DataLoader(val_dataset, batch_size=256, shuffle=False)
     
     #Initialisation of the sub-MLP
-    sub = Sub_MLP(
+    sub = NetworkIntrusionMLP(
         input_size=input_size,
         num_classes=num_classes,
-        device=device
+        device=device,
+        layer_features=[200, 150],
+        layer_classifier=[40, 40],
     )
     
     #Training of the sub-MLP
@@ -146,11 +88,11 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
         optimizer=optimizer_sub,
         scheduler=scheduler_sub,
         criterion=nn.CrossEntropyLoss(),
-        num_epochs=100,
+        num_epochs=50,
         train_loader=train_loader,
         val_loader=val_loader,
         title=f"{title}_{mlp_title}",
-        dir=f"{root_dir}/results/weights",
+        root_dir=f"{root_dir}/results/weights",
         device=device,
         logger=logger
     )
@@ -160,10 +102,10 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
         list_epoch_loss=train_losses_sub,
         list_val_loss=val_losses_sub,
         title=f"{title}_{mlp_title}",
-        dir=f"{root_dir}/results/plots",
+        root_dir=f"{root_dir}/results/plots",
         plot=plot_loss,
         logger=logger,
-        epoch_min=2
+        epoch_min=2,
     )
 
     #Analysys
@@ -172,10 +114,11 @@ def attack_substitut(num_classes,input_size,model,X_test,y_test,dir=root_dir, lo
         X_test=X_val,
         y_test=y_val,
         logger=logger,
-        model_name=f"{title}_{mlp_title}",
-        dir=f"{root_dir}/results/analysis",
+        title=f"{title}_{mlp_title}",
+        root_dir=f"{root_dir}/results/analysis",
         plot=plot_analysis,
-        device=device
+        device=device,
+        save_fig=save_fig,
     )
     return sub, cm, cr
     
