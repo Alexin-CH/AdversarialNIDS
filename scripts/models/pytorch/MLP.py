@@ -3,7 +3,10 @@ import torch
 import torch.nn as nn
 
 class NetworkIntrusionMLP(nn.Module):
-    def __init__(self, input_size, num_classes, scaling_method=None, device='cpu'):
+    """layer_features: list of integers defining the number of neurons in each hidden layer of the feature extractor
+     layer_classifier: list of integers defining the number of neurons in each hidden layer of the classifier
+    """
+    def __init__(self, input_size,layer_features,layer_classifier, num_classes, scaling_method=None, device='cpu'):
         super(NetworkIntrusionMLP, self).__init__()
 
         self.device = device
@@ -14,24 +17,33 @@ class NetworkIntrusionMLP(nn.Module):
 
         self.activation = nn.Mish()
 
-        self.features = nn.Sequential(
-            nn.Linear(input_size, 256//2),
-            nn.BatchNorm1d(256//2),
-            self.activation,
-            nn.Linear(256//2, 128//2),
-            nn.BatchNorm1d(128//2),
-            self.activation,
-            nn.Linear(128//2, 64//2),
-            nn.BatchNorm1d(64//2),
-            self.activation
-        )
+        layers = []        
+        layers.append(nn.Linear(input_size, layer_features[0]))
+        layers.append(nn.BatchNorm1d(layer_features[0]))
+        layers.append(self.activation)
 
-        self.classifier = nn.Sequential(
-            nn.Linear(64//2, 32//2),
-            self.activation,
+        for in_f, out_f in zip(layer_features[:-1], layer_features[1:]):
+            layers.append(nn.Linear(in_f, out_f))
+            layers.append(nn.BatchNorm1d(out_f))
+            layers.append(self.activation)
+        #Wrap feature layers
+        self.features = nn.Sequential(*layers)
+
+        classifier = []
+        classifier.append(nn.Linear(layer_features[-1], layer_classifier[0]))
+        classifier.append(self.activation)
+        
+        for in_c, out_c in zip(layer_classifier[:-1], layer_classifier[1:]):
+            classifier.append(nn.Linear(in_c, out_c))
+            classifier.append(self.activation)
             nn.Dropout(0.1),
-            nn.Linear(32//2, num_classes),
-        )
+            
+        #Add final output layer
+        classifier.append(nn.Linear(layer_classifier[-1], num_classes))
+        
+        #Wrap classifier layers
+        self.classifier = nn.Sequential(*classifier)
+        
 
         self.to(device)
 
