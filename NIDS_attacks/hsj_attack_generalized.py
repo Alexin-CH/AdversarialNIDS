@@ -12,7 +12,7 @@ import torch
 from CICIDS2017.dataset import CICIDS2017
 from UNSWNB15.dataset import UNSWNB15
 
-from scripts.logger import LoggerManager
+from scripts.logger import SimpleLogger
 
 from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier, PyTorchClassifier
@@ -21,66 +21,51 @@ from NIDS_attacks.bounds_constrains import apply_bounds_constraints
 from NIDS_attacks.integers_constrains import apply_integer_constraints
 
 
-def hsj_attack_generalized(model, dataset="CICIDS2017", nb_samples=10, ds_train_size=10000, 
-                          is_multi_class=False, per_sample_visualization=False,
+def hsj_attack_generalized(model, X_test, y_test, root_dir=root_dir, logger=SimpleLogger(), 
+                          dataset="CICIDS2017", nb_samples=10, per_sample_visualization=False,
                           integer_indices=None, modifiable_indices=None, 
-                          apply_constraints=True, logger=None):
+                          apply_constraints=True):
     """
     Generalized HopSkipJump attack with realistic constraints.
     
     Args:
         model: Trained model (scikit-learn or PyTorch)
-        dataset: Dataset name ("CICIDS2017" or "UNSWNB15")
+        X_test: Test features (numpy array)
+        y_test: Test labels (numpy array)
+        root_dir: Root directory for logging
+        logger: Logger instance
+        dataset: Dataset name ("CICIDS2017" or "UNSWNB15") for logging purposes
         nb_samples: Number of samples to attack
-        ds_train_size: Training dataset size
-        is_multi_class: Whether to use multi-class classification
         per_sample_visualization: Show detailed per-sample results
         integer_indices: List of feature indices that should be integers
         modifiable_indices: List of feature indices that can be modified
         apply_constraints: Whether to apply realistic constraints
-        logger: Logger instance (if None, creates new one)
     
     Returns:
         Dictionary with attack results
     """
     
-    if logger is None:
-        logger_mgr = LoggerManager(
-            root_dir=root_dir,
-            log_name=f"hsj_attack_generalized_{dataset}"
-        )
-        logger = logger_mgr.get_logger()
-    
-    logger.info("Starting Generalized HopSkipJump attack")
+    logger.info(f"Starting Generalized HopSkipJump attack on {dataset}")
 
-    # Load dataset
+    # Determine targeted class based on dataset
     if dataset == "CICIDS2017":
-        logger.info("Loading CICIDS2017 dataset...")
-        ds = CICIDS2017(logger=logger).optimize_memory().encode()
-        ds = ds.subset(size=ds_train_size, multi_class=is_multi_class)
-        targeted_class = 0
-    else:
-        logger.info("Loading UNSWNB15 dataset...")
-        ds = UNSWNB15(dataset_size="small", logger=logger).optimize_memory().encode()
-        ds = ds.subset(size=ds_train_size, multi_class=is_multi_class)
-        targeted_class = 3
-
-    if not is_multi_class:
-        targeted_class = 0
-
-    X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
+        targeted_class = 0  # Benign class
+    else:  # UNSWNB15
+        targeted_class = 3 
+        
+    logger.info(f"Using targeted class: {targeted_class}")
     
     # Calculate bounds and constraints from attack samples only
-    attack_mask_train = y_train != targeted_class
-    X_attacks_train = X_train[attack_mask_train]
+    attack_mask_test = y_test != targeted_class
+    X_attacks_available = X_test[attack_mask_test]
     
     if apply_constraints:
-        min_vals = torch.tensor(X_attacks_train, dtype=torch.float32).min(axis=0).values
-        max_vals = torch.tensor(X_attacks_train, dtype=torch.float32).max(axis=0).values
+        min_vals = torch.tensor(X_attacks_available, dtype=torch.float32).min(axis=0).values
+        max_vals = torch.tensor(X_attacks_available, dtype=torch.float32).max(axis=0).values
         
         # Default indices if not provided
         if modifiable_indices is None:
-            modifiable_indices = list(range(X_train.shape[1]))
+            modifiable_indices = list(range(X_test.shape[1]))
         if integer_indices is None:
             integer_indices = []
             
@@ -105,8 +90,8 @@ def hsj_attack_generalized(model, dataset="CICIDS2017", nb_samples=10, ds_train_
     else:  # PyTorch
         art_classifier = PyTorchClassifier(
             model=model,
-            input_shape=X_train.shape[1:],
-            nb_classes=len(np.unique(y_train))
+            input_shape=X_test.shape[1:],
+            nb_classes=len(np.unique(y_test))
         )
     
     # Custom attack with constraints
@@ -221,19 +206,21 @@ if __name__ == "__main__":
     
     # Load dataset and train model
     ds = CICIDS2017().optimize_memory().encode()
-    ds = ds.subset(size=10000, multi_class=False)
+    ds = ds.subset(size=10000, multi_class=True)
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
-    model = train_decision_tree(X_train, y_train, max_depth=10)
+    model, _ = train_decision_tree(X_train, y_train, max_depth=10)
     
     # Example integer features (ports, packet counts, etc.)
-    integer_indices = [0, 1, 2, 5, 10, 15]  # Example indices
+    integer_indices = [0, 2, 5, 10, 15]  # Example indices
     modifiable_indices = list(range(20))  # First 20 features modifiable
     
     results = hsj_attack_generalized(
         model=model,
+        X_test=X_test,
+        y_test=y_test,
         dataset="CICIDS2017",
-        nb_samples=20,
+        nb_samples=200,
         integer_indices=integer_indices,
         modifiable_indices=modifiable_indices,
         apply_constraints=True,
