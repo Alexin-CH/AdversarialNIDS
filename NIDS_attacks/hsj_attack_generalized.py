@@ -122,10 +122,10 @@ def hsj_attack_generalized(model, X_test, y_test, root_dir=root_dir, logger=Simp
     attack = ConstrainedHopSkipJump(
         classifier=art_classifier,
         apply_constraints=apply_constraints,
-        batch_size=32,
-        max_iter=50,
-        max_eval=1000,
-        init_eval=100
+        batch_size=8,
+        max_iter=10,
+        max_eval=10,
+        init_eval=10
     )
     
     # Select attack samples
