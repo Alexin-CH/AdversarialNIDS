@@ -19,7 +19,7 @@ from CICIDS2017.preprocessing.subset import subset_indices
 from CICIDS2017.analysis.distribution import data_distribution
 from CICIDS2017.analysis.mutual_info import mutual_info_classif
 from CICIDS2017.analysis.pca import apply_pca
-from CICIDS2017.analysis.features import FIRST_LEVEL_FEATURES, MODIFIABLE_FEATURES
+from CICIDS2017.analysis.features import MODIFIABLE_FEATURES, INTEGER_INDICES
 
 class CICIDS2017:
     def __init__(self, dataset_size=None, logger=SimpleLogger()):
@@ -27,8 +27,8 @@ class CICIDS2017:
         self.logger = logger
         self.data = download_prepare(logger=self.logger)
         self.multi_class = True
-        self.FIRST_LEVEL_FEATURES = FIRST_LEVEL_FEATURES
         self.MODIFIABLE_FEATURES = MODIFIABLE_FEATURES
+        self.INTEGER_INDICES = INTEGER_INDICES
 
     def optimize_memory(self):
         """ Optimize memory usage of the dataset. """
