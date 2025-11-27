@@ -18,7 +18,7 @@ from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier
 
 
-def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,per_sample_visualization=False):
+def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,is_multi_class=False,per_sample_visualization=False):
 
     logger_mgr = LoggerManager(
         root_dir=root_dir,
@@ -30,11 +30,14 @@ def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 100
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
         ds = CICIDS2017(logger=logger).optimize_memory().encode(attack_encoder="label")
-        ds = ds.subset(size=ds_train_size, multi_class=True)
+        ds = ds.subset(size=ds_train_size, multi_class=is_multi_class)
     else:
         logger.info("Loading UNSWNB15 dataset...")
         ds = UNSWNB15(dataset_size="small", logger=logger).optimize_memory().encode()
-        ds = ds.subset(size=ds_train_size, multi_class=True)  
+        ds = ds.subset(size=ds_train_size, multi_class=is_multi_class)  
+
+    if not is_multi_class:
+        targeted_class = 0
 
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
@@ -92,7 +95,13 @@ def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 100
         'original_accuracy': original_acc,
         'adversarial_accuracy': adversarial_acc,
         'attack_success_rate': attack_success_rate,
-        'perturbation_l2': perturbation
+        'perturbation_l2': perturbation,
+        'model': model,
+        'X_test': X_test,
+        'y_test': y_test,
+        'X_adv': X_adv,
+        'y_attacks': y_attacks,
+        'attack_indices': attack_mask
     }
 
 
