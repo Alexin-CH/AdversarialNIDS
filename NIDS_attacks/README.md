@@ -41,12 +41,18 @@ Les scripts permettent de configurer plusieurs paramètres :
 - **Visualisation** : Affichage détaillé par échantillon
 
 ```python
-results = [dt/rf]_hopskipjump_attack(
-    dataset="CICIDS2017",
-    ds_train_size = 10000,
-    nb_samples=10,
-    per_sample_visualization=True
-)
+results_dt = hsj_attack_generalized(
+        model=model_dt,
+        X_test=X_test,
+        y_test=y_test,
+        dataset="CICIDS2017",
+        #dataset="UNSWNB15",
+        nb_samples=20,
+        integer_indices=integer_indices,
+        modifiable_indices=modifiable_indices,
+        apply_constraints=True,
+        per_sample_visualization=False
+    )
 ```
 
 ### 2. Surrogate Attack
