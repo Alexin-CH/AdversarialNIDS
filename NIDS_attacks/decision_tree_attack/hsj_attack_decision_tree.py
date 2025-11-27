@@ -18,7 +18,8 @@ from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier
 
 
-def dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=10, ds_train_size = 10000, per_sample_visualization=False):
+
+def dt_hopskipjump_attack(dataset="CICIDS2017",nb_samples=10,ds_train_size = 10000,is_multi_class=False,per_sample_visualization=False):
 
     logger_mgr = LoggerManager(
         root_dir=root_dir,
@@ -27,15 +28,21 @@ def dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=10, ds_train_size = 1
     logger = logger_mgr.get_logger()
     logger.info("Starting HopSkipJump attack on Decision Tree")
     
+
     if dataset == "CICIDS2017":
         logger.info("Loading CICIDS2017 dataset...")
         ds = CICIDS2017(logger=logger).optimize_memory().encode()
-        ds = ds.subset(size=ds_train_size, multi_class=True)
+        ds = ds.subset(size=ds_train_size, multi_class=is_multi_class)
+        targeted_class = 0
     else:
         logger.info("Loading UNSWNB15 dataset...")
         ds = UNSWNB15(dataset_size="small", logger=logger).optimize_memory().encode()
-        ds = ds.subset(size=ds_train_size, multi_class=True)
-        
+        ds = ds.subset(size=ds_train_size, multi_class=is_multi_class)
+        targeted_class = 3
+
+    if not is_multi_class:
+        targeted_class = 0 
+
     X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
     
     logger.info("Training Decision Tree...")
@@ -48,7 +55,7 @@ def dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=10, ds_train_size = 1
     
     attack = HopSkipJump(classifier=art_classifier,batch_size=32,max_iter=50,max_eval=1000,init_eval=100)
     
-    attack_mask = y_test != 0  # All non-benign classes (network attacks)
+    attack_mask = y_test != targeted_class  # All non-benign classes (network attacks)
     if attack_mask.sum() == 0:
         logger.info("No attack samples found for attack")
         return
@@ -71,7 +78,7 @@ def dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=10, ds_train_size = 1
     # Calculate metrics
     original_acc = (y_pred_original == y_attacks).mean()
     adversarial_acc = (y_pred_adversarial == y_attacks).mean()  # We want it as low as possible (good for attacker)
-    attack_success_rate = (y_pred_adversarial == 0).mean()  # Success = predicted as benign
+    attack_success_rate = (y_pred_adversarial == targeted_class).mean()  # Success = predicted as benign
     
     perturbation = np.linalg.norm(X_adv - X_attacks, axis=1).mean() # Mean perturbation (L2 norm)
     
@@ -91,9 +98,16 @@ def dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=10, ds_train_size = 1
         'original_accuracy': original_acc,
         'adversarial_accuracy': adversarial_acc,
         'attack_success_rate': attack_success_rate,
-        'perturbation_l2': perturbation
+        'perturbation_l2': perturbation,
+        'model': model,
+        'X_test': X_test,
+        'y_test': y_test,
+        'X_adv': X_adv,
+        'y_attacks': y_attacks,
+        'y_adversarial_pred': y_pred_adversarial,
+        'attack_indices': attack_mask
     }
 
 
 if __name__ == "__main__":
-    results = dt_hopskipjump_attack(dataset="CICIDS2017", nb_samples=25, ds_train_size=10000, per_sample_visualization=True)
+    results = dt_hopskipjump_attack(dataset="UNSWNB15", nb_samples=100, ds_train_size=900000, is_multi_class=True, per_sample_visualization=True)
