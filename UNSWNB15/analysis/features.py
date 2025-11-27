@@ -16,8 +16,8 @@ def compute_features_batch(X, dico,eps=1e-6):
     X[:, dico['Bwd Packets/s']]       = dpkts / dur_safe
     X[:, dico['Avg Fwd Segment Size']] = sbytes / spkts_safe
     X[:, dico['Avg Bwd Segment Size']] = dbytes / dpkts_safe
-    X[:, dico['Sintpkt']]             = dur / (spkts - 1 + eps)
-    X[:, dico['Dintpkt']]             = dur / (dpkts - 1 + eps)
+    X[:, dico['Sintpkt']]             = dur_safe / (spkts_safe - 1 + eps)
+    X[:, dico['Dintpkt']]             = dur_safe / (dpkts_safe - 1 + eps)
 
     return X
 
