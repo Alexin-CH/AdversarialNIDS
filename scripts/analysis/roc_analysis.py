@@ -39,7 +39,6 @@ def roc_analysis_binary(model, X_test, y_test, root_dir=root_dir, logger=SimpleL
     """
     is_pytorch = isinstance(model, nn.Module)
     
-    # Get predictions
     if is_pytorch:
         # Auto-detect device if not specified
         if device is None:
@@ -54,6 +53,7 @@ def roc_analysis_binary(model, X_test, y_test, root_dir=root_dir, logger=SimpleL
         y_pred = model.predict(X_test)
         # Obtenir les probabilités pour la classe positive (classe 1)
         y_score = model.predict_proba(X_test)[:, 1]
+
     # Calculate ROC curve and AUC
     fpr, tpr, _ = roc_curve(y_true, y_score)
     roc_auc = auc(fpr, tpr)
@@ -90,5 +90,5 @@ def roc_analysis_binary(model, X_test, y_test, root_dir=root_dir, logger=SimpleL
     
     return fpr, tpr, roc_auc
 
-
+# ROC analysis for multi-class classification can be added here in the future
 
