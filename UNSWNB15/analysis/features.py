@@ -1,25 +1,24 @@
 import torch
 
-def compute_features_batch(X, dico,eps=1e-6):
-    
-    dur    = X[:, dico['Flow Duration']]
-    sbytes = X[:, dico['Total Length of Fwd Packets']]
-    dbytes = X[:, dico['Total Length of Bwd Packets']]
-    spkts  = X[:, dico['Total Fwd Packets']]
-    dpkts  = X[:, dico['Total Backward Packets']]
+def compute_features(x_adv):
+    dur    = x_adv[:, UNSWNB15_DICT['Flow Duration']]
+    sbytes = x_adv[:, UNSWNB15_DICT['Total Length of Fwd Packets']]
+    dbytes = x_adv[:, UNSWNB15_DICT['Total Length of Bwd Packets']]
+    spkts  = x_adv[:, UNSWNB15_DICT['Total Fwd Packets']]
+    dpkts  = x_adv[:, UNSWNB15_DICT['Total Backward Packets']]
 
-    dur_safe   = torch.clamp(dur, min=eps)
+    dur_safe   = torch.clamp(dur, min=1e-6)
     spkts_safe = torch.clamp(spkts, min=1)
     dpkts_safe = torch.clamp(dpkts, min=1)
 
-    X[:, dico['Fwd Packets/s']]       = spkts / dur_safe
-    X[:, dico['Bwd Packets/s']]       = dpkts / dur_safe
-    X[:, dico['Avg Fwd Segment Size']] = sbytes / spkts_safe
-    X[:, dico['Avg Bwd Segment Size']] = dbytes / dpkts_safe
-    X[:, dico['Sintpkt']]             = dur / (spkts - 1 + eps)
-    X[:, dico['Dintpkt']]             = dur / (dpkts - 1 + eps)
+    x_adv[:, UNSWNB15_DICT['Fwd Packets/s']]       = spkts / dur_safe
+    x_adv[:, UNSWNB15_DICT['Bwd Packets/s']]       = dpkts / dur_safe
+    x_adv[:, UNSWNB15_DICT['Avg Fwd Segment Size']] = sbytes / spkts_safe
+    x_adv[:, UNSWNB15_DICT['Avg Bwd Segment Size']] = dbytes / dpkts_safe
+    x_adv[:, UNSWNB15_DICT['Sintpkt']]             = dur_safe / (spkts_safe - 1 + eps)
+    x_adv[:, UNSWNB15_DICT['Dintpkt']]             = dur_safe / (dpkts_safe - 1 + eps)
 
-    return X
+    return x_adv
 
 FIRST_LEVEL_FEATURES = [
     "srcip",
