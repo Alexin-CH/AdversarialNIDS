@@ -121,6 +121,13 @@ def download_prepare(logger=SimpleLogger()):
         for col in dropped_cols:
             logger.debug(f"  Dropped column: {col}")
 
+        # Drop negative or null values in 'Flow Duration'
+        if 'Flow Duration' in data.columns:
+            initial_rows = len(data)
+            data = data[data['Flow Duration'] > 0]
+            flow_duration_removed = initial_rows - len(data)
+            logger.info(f"Removed {flow_duration_removed:,} rows with non-positive 'Flow Duration'. Remaining: {len(data):,}")
+
         # Creating a dictionary that maps each label to its attack type
         attack_map = {
             'BENIGN': 'BENIGN',
