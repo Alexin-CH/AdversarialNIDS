@@ -1,5 +1,3 @@
-"""Generalized HopSkipJump attack with realistic constraints for NIDS datasets."""
-
 import sys
 import os
 

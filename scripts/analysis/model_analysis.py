@@ -48,8 +48,14 @@ def perform_model_analysis(model, X_test, y_test, root_dir=root_dir, logger=Simp
         y_pred, y_true = get_pytorch_predictions(model, X_test, y_test, device)
     else:
         logger.info(f"Running analysis for scikit-learn model: {title}")
-        y_true = np.asarray(y_test).argmax(axis=1)
-        y_pred = model.predict(X_test).argmax(axis=1)
+        y_true = np.asarray(y_test)
+        y_pred = model.predict(X_test)
+        
+        # Handle both 1D (class indices) and 2D (one-hot encoded) formats
+        if y_true.ndim > 1 and y_true.shape[1] > 1:
+            y_true = y_true.argmax(axis=1)
+        if y_pred.ndim > 1 and y_pred.shape[1] > 1:
+            y_pred = y_pred.argmax(axis=1)
     
     # Calculate metrics
     report = classification_report(y_true, y_pred, digits=4, zero_division=0)
