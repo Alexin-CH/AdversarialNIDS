@@ -85,9 +85,9 @@ def hsj_attack_generalized(model, X_test, y_test, root_dir=root_dir, logger=Simp
     logger.info(f"Initial accuracy: {initial_acc:.3f}")
     
     # Setup ART classifier
-    if hasattr(model, 'predict'):  # Scikit-learn
+    if hasattr(model, 'predict'):
         art_classifier = SklearnClassifier(model=model)
-    else:  # PyTorch
+    else:
         art_classifier = PyTorchClassifier(
             model=model,
             input_shape=X_test.shape[1:],
@@ -198,36 +198,3 @@ def hsj_attack_generalized(model, X_test, y_test, root_dir=root_dir, logger=Simp
         'min_vals': min_vals if apply_constraints else None,
         'max_vals': max_vals if apply_constraints else None
     }
-
-
-if __name__ == "__main__":
-    # Example usage with Decision Tree
-    from scripts.models.decision_tree.decision_tree import train_decision_tree
-    
-    # Load dataset and train model
-    ds = CICIDS2017().optimize_memory().encode()
-    ds = ds.subset(size=10000, multi_class=True)
-    X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
-    
-    model, _ = train_decision_tree(X_train, y_train, max_depth=10)
-    
-    # Example integer features (ports, packet counts, etc.)
-    integer_indices = [0, 2, 5, 10, 15]  # Example indices
-    modifiable_indices = list(range(20))  # First 20 features modifiable
-    
-    results = hsj_attack_generalized(
-        model=model,
-        X_test=X_test,
-        y_test=y_test,
-        dataset="CICIDS2017",
-        nb_samples=200,
-        integer_indices=integer_indices,
-        modifiable_indices=modifiable_indices,
-        apply_constraints=True,
-        per_sample_visualization=True
-    )
-
-# save X_adv to csv
-    import pandas as pd
-    X_adv_df = pd.DataFrame(results['X_adv'], columns=[f'feature_{i}' for i in range(results['X_adv'].shape[1])])
-    X_adv_df.to_csv('X_adv_hsj_generalized.csv', index=False)
