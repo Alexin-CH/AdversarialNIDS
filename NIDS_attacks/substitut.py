@@ -86,7 +86,7 @@ def attack_substitut(model, X_test, y_test, root_dir=root_dir, logger=SimpleLogg
     criterion = nn.CrossEntropyLoss()
 
     title = "Substitute"
-    mlp_title = f"MLP{model_name}_{num_epochs_sub}"
+    mlp_title = model_name
     
     optimizer_sub = optim.AdamW(substitute_model.parameters(), lr=learning_rate_sub)
     scheduler_sub = optim.lr_scheduler.ReduceLROnPlateau(optimizer_sub, mode='min', factor=0.9, patience=8, min_lr=1e-8)
@@ -121,6 +121,7 @@ def attack_substitut(model, X_test, y_test, root_dir=root_dir, logger=SimpleLogg
         model=substitute_model,
         X_test=X_val,
         y_test=y_val,
+        num_classes=num_classes,
         logger=logger,
         title=f"{title}_{mlp_title}",
         root_dir=root_dir,

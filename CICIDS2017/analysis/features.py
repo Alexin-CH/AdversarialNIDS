@@ -10,7 +10,6 @@ def recompute_features(x_adv):
     # safe versions
     # dur_s = torch.clamp(dur, min=1e-6)
     if torch.any(dur <= 0):
-        print("Warning: Flow Duration has non-positive values, clamping to avoid division by zero.")
         dur_s = torch.clamp(dur, min=1e-6)
     else:
         dur_s = dur
