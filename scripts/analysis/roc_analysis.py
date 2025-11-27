@@ -39,64 +39,27 @@ def roc_analysis_binary(model, X_test, y_test, root_dir=root_dir, logger=SimpleL
     """
     is_pytorch = isinstance(model, nn.Module)
     
-    # Get predictions and probabilities
+    # Get predictions
     if is_pytorch:
         # Auto-detect device if not specified
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        logger.info(f"Running ROC analysis for PyTorch model: {title} on device: {device}")
-        
-        model.eval()
-        model = model.to(device)
-        
-        with torch.no_grad():
-            if isinstance(X_test, torch.Tensor):
-                X_test_tensor = X_test.to(device)
-            else:
-                X_test_tensor = torch.FloatTensor(X_test).to(device)
-            
-            # Get probabilities (assume sigmoid output for binary classification)
-            outputs = model(X_test_tensor)
-            if outputs.shape[1] == 1:
-                # Single output with sigmoid
-                y_prob = torch.sigmoid(outputs).cpu().numpy().flatten()
-            else:
-                # Two outputs with softmax, take positive class probability
-                y_prob = torch.softmax(outputs, dim=1)[:, 1].cpu().numpy()
-        
-        # Convert true labels
-        if isinstance(y_test, torch.Tensor):
-            y_true = y_test.cpu().numpy()
-        else:
-            y_true = np.asarray(y_test)
-            
-        # If y_true is one-hot encoded, convert to class labels
-        if y_true.ndim > 1 and y_true.shape[1] > 1:
-            y_true = y_true.argmax(axis=1)
-            
+        logger.info(f"Running analysis for PyTorch model: {title} on device: {device}")
+        y_pred, y_true = get_pytorch_predictions(model, X_test, y_test, device)
+        y_score = y_pred  # Pour PyTorch, utiliser les probabilités directement
     else:
-        logger.info(f"Running ROC analysis for scikit-learn model: {title}")
-        
-        # Get probabilities
-        if hasattr(model, 'predict_proba'):
-            y_prob = model.predict_proba(X_test)[:, 1]  # Positive class probability
-        elif hasattr(model, 'decision_function'):
-            y_prob = model.decision_function(X_test)
-        else:
-            raise ValueError("Model must have predict_proba or decision_function method")
-        
-        # Convert true labels
+        logger.info(f"Running analysis for scikit-learn model: {title}")
+        # Pour scikit-learn, y_test contient déjà les labels directs (0, 1) pour la classification binaire
         y_true = np.asarray(y_test)
-        if y_true.ndim > 1 and y_true.shape[1] > 1:
-            y_true = y_true.argmax(axis=1)
-    
+        y_pred = model.predict(X_test)
+        # Obtenir les probabilités pour la classe positive (classe 1)
+        y_score = model.predict_proba(X_test)[:, 1]
     # Calculate ROC curve and AUC
-    fpr, tpr, _ = roc_curve(y_true, y_prob)
+    fpr, tpr, _ = roc_curve(y_true, y_score)
     roc_auc = auc(fpr, tpr)
     
     logger.info(f"ROC AUC for {title}: {roc_auc:.4f}")
     
-    # Create ROC plot
     if plot or save_fig:
         fig, ax = plt.subplots(1, 1, figsize=(8, 6))
         
