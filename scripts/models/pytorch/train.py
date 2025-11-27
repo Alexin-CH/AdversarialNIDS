@@ -14,7 +14,12 @@ def train(model, optimizer, scheduler, criterion, num_epochs, train_loader, val_
             # Forward pass
             output = model(X_train)
             loss = criterion(output, y_train)
-            losses.append(loss)
+
+            if not torch.isnan(loss):
+                losses.append(torch.clamp(loss, max=1e4))
+            else:
+                logger.critical(f"NaN loss encountered at epoch {epoch}. Skipping this batch.")
+                exit(1)
 
         epoch_loss = sum(losses) / len(losses)
         epoch_losses.append(epoch_loss.cpu().detach().numpy())
