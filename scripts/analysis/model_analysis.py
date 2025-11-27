@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 
 root_dir = os.getcwd().split("AdversarialNIDS")[0] + "AdversarialNIDS"
 sys.path.append(root_dir)
@@ -19,7 +19,7 @@ from scripts.analysis.classification_report import plot_classification_report
 from scripts.logger import SimpleLogger
 
 
-def perform_model_analysis(model, X_test, y_test, root_dir=root_dir, logger=SimpleLogger(), title="model",
+def perform_model_analysis(model, X_test, y_test, num_classes, root_dir=root_dir, logger=SimpleLogger(), title="model",
                           plot=True, save_fig=True, device=None):
     """
     Perform complete classification analysis with confusion matrix and report visualization.
@@ -48,35 +48,56 @@ def perform_model_analysis(model, X_test, y_test, root_dir=root_dir, logger=Simp
         y_pred, y_true = get_pytorch_predictions(model, X_test, y_test, device)
     else:
         logger.info(f"Running analysis for scikit-learn model: {title}")
-        y_true = np.asarray(y_test).argmax(axis=1)
-        y_pred = model.predict(X_test).argmax(axis=1)
-    
+        y_true = np.asarray(y_test).argmax(axis=-1)
+        y_pred = model.predict(X_test).argmax(axis=-1)
+
+    if num_classes == 2:
+        if is_pytorch:
+            y_score = torch.softmax(torch.FloatTensor(y_pred), dim=0).cpu().numpy()
+        else:
+            y_score = np.asarray(model.predict_proba(X_test))[1].argmax(axis=-1)
+                
+
+    # print(type(y_true), type(y_pred), type(y_score) if num_classes == 2 else "N/A")
+    # print(y_true.shape, y_pred.shape, y_score.shape if num_classes == 2 else "N/A")
+
     # Calculate metrics
-    report = classification_report(y_true, y_pred, digits=4, zero_division=0)
-    report_dict = classification_report(y_true, y_pred, 
-                                       digits=4, output_dict=True, zero_division=0)
+    if num_classes == 2:
+        fpr, tpr, _ = roc_curve(y_true, y_score)
+
+        # print(type(fpr), type(tpr))
+        # print(fpr.shape, tpr.shape)
+
+        roc_auc = auc(fpr, tpr)
+        logger.info(f"AUC: {roc_auc:.4f}")
+
+    report_dict = classification_report(y_true, y_pred, digits=4, output_dict=True, zero_division=0)
     cm = confusion_matrix(y_true, y_pred)
     
     # Log classification report
     log_header = f"Classification Report for {title}"
-    logger.debug(f"\n{log_header}\n{report}\n")
+    logger.debug(f"\n{log_header}\n{report_dict}\n")
     
-    # Create visualization with confusion matrix and report table
-    fig = plt.figure(figsize=(16, 6))
-    gs = fig.add_gridspec(1, 2, wspace=0.3)
-        
-    # Plot confusion matrix (left)
-    ax_cm = fig.add_subplot(gs[0, 0])
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax_cm)
-    ax_cm.set_title('Confusion Matrix', fontsize=12, weight='bold')
-    ax_cm.set_xlabel('Predicted Label')
-    ax_cm.set_ylabel('True Label')
-    
-    # Plot classification report table (right)
-    ax_report = fig.add_subplot(gs[0, 1])
-    plot_classification_report(report_dict, ax_report, 'Classification Report')
-    
-    fig.suptitle(f'Model Analysis - {title}', fontsize=16, weight='bold')
+    # Create visualization with confusion matrix, report table and ROC curve
+    fig, axes = plt.subplots(1, 3 if num_classes == 2 else 2, figsize=(18, 6))
+    fig.suptitle(f"Model Analysis: {title}", fontsize=16)
+    # Confusion Matrix
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[0])
+    axes[0].set_title('Confusion Matrix')
+    axes[0].set_xlabel('Predicted Label')
+    axes[0].set_ylabel('True Label')
+    # Classification Report Table
+    plot_classification_report(report_dict, ax=axes[1], title='Classification Report')
+    # ROC Curve for non-PyTorch models
+    if num_classes == 2:
+        axes[2].plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:4f})')
+        axes[2].plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+        axes[2].set_xlim([0.0, 1.0])
+        axes[2].set_ylim([0.0, 1.05])
+        axes[2].set_xlabel('False Positive Rate')
+        axes[2].set_ylabel('True Positive Rate')
+        axes[2].set_title('Receiver Operating Characteristic')
+        axes[2].legend(loc="lower right")
 
     if save_fig:
         # Save figure to dir
