@@ -64,7 +64,40 @@ Effectue une analyse complète de classification avec matrice de confusion et vi
 
 ---
 
-### 3. `pytorch_prediction.py`
+### 3. `roc_analysis.py`
+
+Module pour effectuer l'analyse ROC (Receiver Operating Characteristic) spécialement conçu pour la classification binaire.
+
+#### Fonctions principales :
+
+**`roc_analysis_binary(model, X_test, y_test, root_dir=root_dir, logger=SimpleLogger(), title="model", plot=True, save_fig=True, device=None)`**
+
+Effectue une analyse ROC complète pour les modèles de classification binaire avec support PyTorch et scikit-learn.
+
+- **Paramètres :**
+  - `model` : Modèle de classification binaire entraîné (PyTorch nn.Module ou modèle sklearn)
+  - `X_test` : Caractéristiques de test (numpy array, pandas DataFrame, ou torch Tensor)
+  - `y_test` : Étiquettes vraies binaires (numpy array, pandas Series, ou torch Tensor)
+  - `root_dir` : Répertoire racine pour sauvegarder les figures (défaut: root_dir)
+  - `logger` : Instance de logger pour enregistrer les résultats (défaut: SimpleLogger())
+  - `title` : Nom du modèle pour les titres et logs (défaut: "model")
+  - `plot` : Afficher le graphique ROC (défaut: True)
+  - `save_fig` : Sauvegarder la figure (défaut: True)
+  - `device` : Device pour les modèles PyTorch ('cuda' ou 'cpu', défaut: auto-détection)
+
+- **Retourne :**
+  - `tuple` : (fpr, tpr, roc_auc) - Taux de faux positifs, taux de vrais positifs, et score AUC
+
+- **Fonctionnalités :**
+  - Compatible avec les modèles PyTorch et scikit-learn
+  - Détection automatique du type de modèle et du device
+
+**Spécificités techniques :**
+- Visualisation avec palette de couleurs personnalisée et grille
+
+---
+
+### 4. `pytorch_prediction.py`
 
 Utilitaire pour obtenir des prédictions à partir de modèles PyTorch.
 
@@ -92,6 +125,37 @@ Obtient les prédictions d'un modèle PyTorch avec traitement par batch.
   - Inférence sans calcul de gradients (torch.no_grad())
 
 ## Utilisation
+
+### Exemple d'analyse ROC
+
+```python
+from scripts.analysis.roc_analysis import roc_analysis_binary
+from scripts.logger import SimpleLogger
+
+# Initialiser le logger
+logger = SimpleLogger()
+
+# Analyse ROC pour un modèle PyTorch
+fpr, tpr, auc_score = roc_analysis_binary(
+    model=my_pytorch_model,
+    X_test=X_test_data,
+    y_test=y_test_binary,  # Labels binaires (0, 1)
+    logger=logger,
+    title="Deep Learning Binary Classifier",
+    device="cuda"
+)
+
+# Analyse ROC pour un modèle scikit-learn
+fpr, tpr, auc_score = roc_analysis_binary(
+    model=my_sklearn_model,
+    X_test=X_test_data,
+    y_test=y_test_binary,
+    logger=logger,
+    title="Random Forest Binary Classifier"
+)
+
+print(f"AUC Score: {auc_score:.4f}")
+```
 
 ### Exemple d'analyse complète d'un modèle
 
@@ -125,11 +189,16 @@ cm, report = perform_model_analysis(
 ## Sorties
 
 L'analyse génère :
-1. **Logs texte** : Rapport de classification détaillé dans les logs
+1. **Logs texte** : 
+   - Rapport de classification détaillé dans les logs (model_analysis)
+   - Scores AUC et métriques ROC (roc_analysis)
 2. **Visualisations** :
    - Matrice de confusion (heatmap colorée)
    - Tableau du rapport de classification (precision, recall, f1-score, support)
-3. **Fichiers PNG** : Sauvegardés automatiquement avec le nom `{model_name}_model_analysis.png`
+   - Courbe ROC avec AUC et ligne de référence
+3. **Fichiers PNG** : 
+   - `{model_name}_model_analysis.png` (analyse complète)
+   - `{title}_roc_analysis.png` (courbe ROC)
 
 ## Compatibilité
 
