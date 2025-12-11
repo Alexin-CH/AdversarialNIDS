@@ -21,7 +21,7 @@ L'objectif principal de ce projet est de :
 ## Contraintes Techniques
 - Utilisation exclusivement de jeux de données publics et simulés.
 - Les perturbations doivent rester réalistes pour conserver des traces plausibles de trafic.
-- Utilisation obligatoire de bibliothèques Python pour le machine learning (scikit-learn, PyTorch ou TensorFlow).
+- Utilisation de bibliothèques Python pour le machine learning (scikit-learn, PyTorch).
 
 ## Installation
 
