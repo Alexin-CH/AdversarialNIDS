@@ -9,7 +9,6 @@ sys.path.append(root_dir)
 import numpy as np
 
 from CICIDS2017.dataset import CICIDS2017
-from UNSWNB15.dataset import UNSWNB15
 
 from scripts.models.random_forest.random_forest import train_random_forest
 from scripts.logger import LoggerManager
@@ -18,25 +17,22 @@ from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier
 
 
-def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 10000,per_sample_visualization=False):
-
+def rf_hopskipjump_attack(nb_samples=25, train_size = 10000, multi_class=False, per_sample_visualization=False):
     logger_mgr = LoggerManager(
         root_dir=root_dir,
-        log_name=f"hsj_attack_random_forest_{dataset}"
+        log_name="hsj_attack_random_forest"
     )
     logger = logger_mgr.get_logger()
     logger.info("Starting HopSkipJump attack on Random Forest")
-    
-    if dataset == "CICIDS2017":
-        logger.info("Loading CICIDS2017 dataset...")
-        ds = CICIDS2017(logger=logger).optimize_memory().encode(attack_encoder="label")
-        ds = ds.subset(size=ds_train_size, multi_class=True)
-    else:
-        logger.info("Loading UNSWNB15 dataset...")
-        ds = UNSWNB15(dataset_size="small", logger=logger).optimize_memory().encode()
-        ds = ds.subset(size=ds_train_size, multi_class=True)  
 
-    X_train, X_test, y_train, y_test = ds.split(test_size=0.2, apply_smote=True)
+    logger.info("Loading CICIDS2017 dataset...")
+    full_dataset = CICIDS2017(
+        dataset_size="full",
+        logger=logger
+    ).optimize_memory().encode(attack_encoder="label")
+    dataset = full_dataset.subset(size=train_size, multi_class=multi_class)
+
+    X_train, X_test, y_train, y_test = dataset.split(test_size=0.2, apply_smote=True)
     
     logger.info("Training Random Forest...")
     model, cv_scores = train_random_forest(X_train, y_train, n_estimators=10, max_depth=10, cv_test=False, logger=logger)
@@ -97,4 +93,4 @@ def rf_hopskipjump_attack(dataset="CICIDS2017",nb_samples=25,ds_train_size = 100
 
 
 if __name__ == "__main__":
-    results = rf_hopskipjump_attack(dataset="UNSWNB15", nb_samples=25, ds_train_size=15000, per_sample_visualization=True)
+    results = rf_hopskipjump_attack(nb_samples=25, train_size=500*1000, per_sample_visualization=True)

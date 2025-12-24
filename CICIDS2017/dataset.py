@@ -23,7 +23,11 @@ from CICIDS2017.analysis.features import MODIFIABLE_FEATURES, INTEGER_INDICES
 
 class CICIDS2017:
     def __init__(self, dataset_size=None, logger=SimpleLogger()):
-        """ Initialize the CICIDS2017 dataset class by downloading and preparing the dataset. """
+        """
+        Initialize the CICIDS2017 dataset class by downloading and preparing the dataset.
+        Returns:
+            self: CICIDS2017
+        """
         self.logger = logger
         self.data = download_prepare(logger=self.logger)
         self.multi_class = True
@@ -31,26 +35,42 @@ class CICIDS2017:
         self.INTEGER_INDICES = INTEGER_INDICES
 
     def optimize_memory(self):
-        """ Optimize memory usage of the dataset. """
+        """
+        Optimize memory usage of the dataset.
+        Returns:
+            self: CICIDS2017
+        """
         self.logger.info("Optimizing memory usage of the dataset...")
         self.data = optimize_memory_usage(self.data, logger=self.logger)
         return self
 
     def encode(self, attack_encoder="label"):
-        """ Encode the dataset using data_encoding function. """
+        """
+        Encode the dataset using data_encoding function.
+        Returns:
+            self: CICIDS2017
+        """
         self.logger.info("Encoding attack labels...")
         encoded = data_encoding(self.data, attack_encoder=attack_encoder, logger=self.logger)
         self.features, self.is_attack, self.attack_classes = encoded
         return self
 
     def scale(self, scaler="standard"):
-        """ Scale the dataset features using the provided scaler. """
+        """
+        Scale the dataset features using the provided scaler.
+        Returns:
+            self: CICIDS2017
+        """
         self.logger.info("Scaling dataset features...")
         self.features = scale(self.features, scaler=scaler, logger=self.logger)
         return self
 
     def subset(self, size=None, multi_class=False):
-        """ Undersample the dataset to the specified size. """
+        """
+        Undersample the dataset to the specified size.
+        Returns:
+            self: CICIDS2017
+        """
         self.logger.info(f"Subsetting dataset to size: {size}...")
         self.multi_class = multi_class
 
@@ -70,7 +90,11 @@ class CICIDS2017:
         return self
 
     def split(self, test_size=0.2, to_tensor=False, one_hot=False, apply_smote=False):
-        """ Split the dataset into training and testing sets. """
+        """
+        Split the dataset into training and testing sets.
+        Returns:
+            data_split: (X_train, X_test, y_train, y_test)
+        """
         self.logger.info("Splitting dataset into training and testing sets...")
 
         X = self.features.values.astype(float)
@@ -92,7 +116,11 @@ class CICIDS2017:
         return data_split
         
     def distribution(self):
-        """ Display the distribution of attack classes in the dataset. """
+        """
+        Display the distribution of attack classes in the dataset.
+        Returns:
+            np.ndarray: Distribution of classes
+        """
         self.logger.info("Calculating data distribution...")
 
         if self.multi_class:
@@ -107,7 +135,11 @@ class CICIDS2017:
         return distribution
 
     def mutual_info(self):
-        """ Calculate mutual information for feature selection. """
+        """
+        Calculate mutual information for feature selection.
+        Returns:
+            np.ndarray: Mutual information scores for each feature
+        """
         self.logger.info("Calculating mutual information for feature selection...")
 
         X = self.features.values.astype(float)
@@ -125,7 +157,12 @@ class CICIDS2017:
         return mi
 
     def pca(self, n_components=2):
-        """ Apply PCA to reduce dimensionality of the dataset. """
+        """
+        Apply PCA to reduce dimensionality of the dataset.
+        Returns:
+            principal_components: np.ndarray
+            explained_variance_ratio: np.ndarray
+        """
         self.logger.info(f"Applying PCA with {n_components} components...")
 
         data = self.features.values.astype(float)

@@ -25,23 +25,22 @@ print("=" * 50)
 from sklearn.decomposition import PCA
 
 pca_componants = []
-for n_components in range(1, len(dataset.data.columns), 2):
-    pca = PCA(n_components=n_components)
-    pca_features = pca.fit_transform(dataset.features)
-    pca_componants.append((n_components, pca, pca_features))
+for n_components in range(1, len(dataset.data.columns), 1):
+    pca, exp_var_ratio = dataset.pca(n_components=n_components)
+    pca_componants.append(exp_var_ratio)
     lm.logger.info(f"PCA with {n_components} components")
-    lm.logger.info(f"Explained variance ratio: {pca.explained_variance_ratio_.sum():.4f}")
-    lm.logger.info(f"Components shape: {pca_features.shape}")
+    lm.logger.info(f"Explained variance ratio: {exp_var_ratio.sum():.4f}")
     lm.logger.info("-" * 50)
 
 import matplotlib.pyplot as plt
 
-explained_variances = [pca.explained_variance_ratio_.sum() for _, pca, _ in pca_componants]
+explained_variances = [v.sum() for v in pca_componants]
 plt.figure(figsize=(10, 6))
 plt.plot(range(1, len(explained_variances) + 1), explained_variances, marker='o')
 plt.title('Explained Variance vs Number of PCA Components')
 plt.xlabel('Number of PCA Components')
 plt.ylabel('Explained Variance Ratio')
 plt.grid()
+os.makedirs(f"{root_dir}/results/PCA_Analysis", exist_ok=True)
 plt.savefig(f"{root_dir}/results/PCA_Analysis/explained_variance.png")
 plt.close()

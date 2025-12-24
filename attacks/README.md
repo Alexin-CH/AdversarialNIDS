@@ -35,7 +35,7 @@ L'attaque HopSkipJump est une méthode sophistiquée qui ne nécessite pas l'acc
 
 Les scripts permettent de configurer plusieurs paramètres :
 
-- **Dataset** : `"CICIDS2017"` ou `"UNSWNB15"`
+- **Dataset** : `"CICIDS2017"`
 - **Nombre d'échantillons** : Nombre d'exemples à attaquer
 - **Taille du dataset d'entrainement** : Taille du sous-dataset servant à l'entrainement du modèle
 - **Visualisation** : Affichage détaillé par échantillon
@@ -45,8 +45,6 @@ results_dt = hsj_attack_generalized(
         model=model_dt,
         X_test=X_test,
         y_test=y_test,
-        dataset="CICIDS2017",
-        #dataset="UNSWNB15",
         nb_samples=20,
         integer_indices=integer_indices,
         modifiable_indices=modifiable_indices,
@@ -82,7 +80,7 @@ d’attaque afin de garantir que les exemples adverses restent réalistes et dan
 en évitant qu’ils ne dérivent vers des plages de caractéristiques propres aux données BENIGN
 
 ```python
-attack_mask = y_train != 0 #or 3 for BENIGN
+attack_mask = y_train != 0 # BENIGN
 X_attacks = X_train[attack_mask]
 min_vals=torch.tensor(X_train,dtype=torch.float32).min(axis=0).values
 max_vals=torch.tensor(X_train,dtype=torch.float32).max(axis=0).values
