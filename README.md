@@ -13,7 +13,7 @@ L'objectif principal de ce projet est de :
 - **Bob** : Pentesteur cherchant à comprendre et tester les techniques adversariales dans un environnement contrôlé.
 
 ## Fonctionnalités
-- Entraînement d'un modèle simple de détection d'intrusions (Random Forest ou réseau neuronal léger) sur un jeu de données public (CICIDS2017, UNSW-NB15).
+- Entraînement d'un modèle simple de détection d'intrusions (Random Forest ou réseau neuronal léger) sur un jeu de données public (CICIDS2017).
 - Génération d'exemples adversariaux en modifiant les caractéristiques du trafic.
 - Évaluation de la performance du modèle (taux de détection, faux négatifs) avant et après l'attaque.
 - Visualisation des perturbations et des différences de comportement du modèle.
