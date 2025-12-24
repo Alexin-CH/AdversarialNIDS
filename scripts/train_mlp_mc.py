@@ -18,11 +18,8 @@ from scripts.logger import LoggerManager
 from scripts.analysis.model_analysis import perform_model_analysis
 
 from CICIDS2017.dataset import CICIDS2017
-from UNSWNB15.dataset import UNSWNB15
 
 from scripts.models.pytorch.MLP import NetworkIntrusionMLP
-from scripts.models.pytorch.CNN import NetworkIntrustionCNN
-from scripts.models.pytorch.LSTM import NetworkIntrusionLSTM
 
 from scripts.models.pytorch.train import train
 from scripts.models.pytorch.visualization import display_loss
@@ -38,8 +35,8 @@ title = lm.get_title()
 logger.info(f"Logger initialized for '{title}'")
 logger.info(f"Using device: {device}")
 
-full_dataset = CICIDS2017( # [UNSWNB15() or CICIDS2017()]
-    dataset_size="small",
+full_dataset = CICIDS2017(
+    dataset_size="full", # "full" or "small"
     logger=logger
 ).optimize_memory().encode(attack_encoder="label")
 
@@ -72,8 +69,9 @@ criterion = nn.CrossEntropyLoss()
 
 model_mlp = NetworkIntrusionMLP(
     input_size=input_size,
+    layer_features=[128, 64, 32],
+    layer_classifier=[16],
     num_classes=num_classes,
-    scaling_method='minmax',
     device=device
 )
 
@@ -83,7 +81,7 @@ logger.info(f"MLP Model initialized with {model_mlp.num_params()} parameters")
 model_mlp = model_mlp.fit_scalers(X_train=X_train)
 
 learning_rate_mlp = 1e-2
-num_epochs_mlp = 400
+num_epochs_mlp = 4
 
 mlp_title = f"MLPS_mc_{model_type}_{num_epochs_mlp}"
 
@@ -99,7 +97,7 @@ model_mlp, train_losses_mlp, val_losses_mlp = train(
     train_loader=train_loader,
     val_loader=val_loader,
     title=f"{title}_{mlp_title}",
-    dir=f"{root_dir}/results/weights",
+    root_dir=root_dir,
     device=device,
     logger=logger
 )
@@ -118,6 +116,7 @@ cm, cr = perform_model_analysis(
     model=model_mlp,
     X_test=X_val,
     y_test=y_val,
+    num_classes=num_classes,
     logger=logger,
     title=f"{title}_{mlp_title}",
     root_dir=root_dir,
