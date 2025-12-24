@@ -7,8 +7,8 @@ sys.path.append(root_dir)
 
 from CICIDS2017.analysis.features import recompute_features
 
-from NIDS_attacks.bounds_constrains import apply_bounds_constraints
-from NIDS_attacks.integers_constrains import apply_integer_constraints
+from attacks.bounds_constrains import apply_bounds_constraints
+from attacks.integers_constrains import apply_integer_constraints
 
 def attack_fgsm(model, criterion, x_val, target, top_features=None, eps = 0.01):
     """

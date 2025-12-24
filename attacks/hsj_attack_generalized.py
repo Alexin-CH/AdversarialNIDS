@@ -8,15 +8,14 @@ import numpy as np
 import torch
 
 from CICIDS2017.dataset import CICIDS2017
-from UNSWNB15.dataset import UNSWNB15
 
 from scripts.logger import SimpleLogger
 
 from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier, PyTorchClassifier
 
-from NIDS_attacks.bounds_constrains import apply_bounds_constraints
-from NIDS_attacks.integers_constrains import apply_integer_constraints
+from attacks.bounds_constrains import apply_bounds_constraints
+from attacks.integers_constrains import apply_integer_constraints
 
 
 def hsj_attack_generalized(model, X_test, y_test, root_dir=root_dir, logger=SimpleLogger(), 
